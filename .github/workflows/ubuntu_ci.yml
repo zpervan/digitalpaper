@@ -1,0 +1,23 @@
+name: Ubuntu
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.19'
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Build Project | All
+        run: go build -o server digitalpaper/backend
