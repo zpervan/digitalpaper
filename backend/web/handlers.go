@@ -8,13 +8,16 @@ import (
 )
 
 var files []string
+var fileServer http.Handler
 
 func init() {
 	// @TODO: Populate automatically HTML file list
 	files = []string{
-		"./ui/html/base.html",
+		"./ui/html/pages/base.html",
 		"./ui/html/components/navigation_bar.html",
 	}
+
+	fileServer = http.FileServer(http.Dir("./ui/static/"))
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +44,7 @@ func HandleRequests() *mux.Router {
 	router := mux.NewRouter()
 
 	router.Path("/").HandlerFunc(home)
+	router.PathPrefix("/").Handler(http.StripPrefix("/static", fileServer))
 
 	return router
 }
