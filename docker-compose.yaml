@@ -25,6 +25,7 @@ services:
     env_file: .env
     volumes:
       - database_data:/data/db
+      - ./backend/database/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
       - network
 

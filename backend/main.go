@@ -11,7 +11,7 @@ func main() {
 	err := http.ListenAndServe(":3500", web.HandleRequests())
 
 	if err != nil {
-		logger.Error("Error while creating server. Reason: " + err.Error())
+		logger.Error("Error during server start-up. Reason: " + err.Error())
 		return
 	}
 }
