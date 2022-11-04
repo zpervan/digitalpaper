@@ -43,6 +43,7 @@ func init() {
 	files = []string{
 		"./ui/html/pages/base.html",
 		"./ui/html/components/navigation_bar.html",
+		"./ui/html/components/preview_article.html",
 	}
 
 	fileServer = http.FileServer(http.Dir("./ui/static/"))
@@ -61,7 +62,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.ExecuteTemplate(w, "base", nil)
+	err = ts.ExecuteTemplate(w, "base", &postMock)
 	if err != nil {
 		logger.Error(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

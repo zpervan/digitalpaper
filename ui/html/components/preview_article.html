@@ -1,0 +1,12 @@
+{{define "title"}}{{.Title}}{{end}}
+{{define "main"}}
+<div class='article'>
+    <div class='metadata'>
+        <strong>{{.Title}} {{.Author}}</strong>
+    </div>
+    <pre><code>{{.Body}}</code></pre>
+    <div class='metadata'>
+        <time>Created: {{.Date}}</time>
+    </div>
+</div>
+{{end}}

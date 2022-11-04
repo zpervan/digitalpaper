@@ -1,15 +1,16 @@
 {{define "base"}}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Digital Paper</title>
 
-        <!-- CSS -->
-        <link rel='stylesheet' type="text/css" href='/static/css/base.css'>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <title>Digital Paper</title>
 
-    <body>
+    <!-- CSS -->
+    <link rel='stylesheet' type="text/css" href='/static/css/base.css'>
+</head>
+
+<body>
     <header>
         <h1>Digital Paper</h1>
 
@@ -17,7 +18,12 @@
 
     {{template "navigation_bar" .}}
 
+    <main>
+        {{template "main" .}}
+    </main>
+
     <footer>Created by Zvonimir Pervan</footer>
-    </body>
+</body>
+
 </html>
 {{end}}
