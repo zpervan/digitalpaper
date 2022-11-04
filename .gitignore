@@ -5,3 +5,4 @@
 go.sum
 logs.txt
 server
+__debug_bin
