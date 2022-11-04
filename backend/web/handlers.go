@@ -2,17 +2,20 @@ package web
 
 import (
 	"digitalpaper/backend/core/logger"
+	"encoding/json"
 
-	"github.com/gorilla/mux"
 	"html/template"
 	"net/http"
 	"os"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 // For local (non-Docker) development/testing
 const localDatabaseUrl = "mongodb://admin:password@localhost:27018"
 
-var database Database
+var database *Database
 var files []string
 var fileServer http.Handler
 
@@ -26,12 +29,14 @@ func init() {
 		databaseUrl = localDatabaseUrl
 	}
 
-	_, err := Connect(databaseUrl)
+	databaseTemp, err := Connect(databaseUrl)
 
 	if err != nil {
 		logger.Warn("Could not connect to database. Reason:" + err.Error())
 		panic(err)
 	}
+
+	database = &databaseTemp
 
 	// Initialize web page and file server
 	// @TODO: Populate automatically HTML file list
@@ -63,9 +68,29 @@ func home(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func createPost() {
-	// @TODO: Implement post creation
-	logger.Info("Create post functionality not implemented")
+func createPost(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/posts" {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	var newPost Post
+	err := json.NewDecoder(r.Body).Decode(&newPost)
+
+	if err != nil {
+		logger.Error("Could not create new post. Reason:" + err.Error())
+	}
+
+	newPost.Id = uuid.New().String()
+
+	err = database.CreatePost(&newPost)
+
+	if err != nil {
+		logger.Error("Could not create a new task in the database. Reason:" + err.Error())
+	}
 }
 
 func editPost() {
@@ -78,9 +103,20 @@ func deletePost() {
 	logger.Info("Delete post functionality not implemented")
 }
 
-func getPosts() {
-	// @TODO: Implement posts fetching
-	logger.Info("Fetch posts functionality not implemented")
+func getPosts(w http.ResponseWriter, req *http.Request) {
+	logger.Info("Fetching all posts...")
+
+	context := req.Context()
+
+	posts, err := database.GetAllPosts(&context)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
+	err = json.NewEncoder(w).Encode(posts)
+	if err != nil {
+		logger.Error(err.Error())
+	}
 }
 
 func createUser() {
@@ -106,6 +142,13 @@ func getUsers() {
 func HandleRequests() *mux.Router {
 	router := mux.NewRouter()
 
+	// GET
+	router.Path("/posts").Methods("GET").HandlerFunc(getPosts)
+
+	// POST
+	router.Path("/posts").Methods("POST").HandlerFunc(createPost)
+
+	// Web page
 	router.Path("/").HandlerFunc(home)
 	router.PathPrefix("/").Handler(http.StripPrefix("/static", fileServer))
 
