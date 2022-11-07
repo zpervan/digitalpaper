@@ -42,6 +42,7 @@ func init() {
 	// @TODO: Populate automatically HTML file list
 	files = []string{
 		"./ui/html/pages/base.html",
+		"./ui/html/components/header_with_image.html",
 		"./ui/html/components/navigation_bar.html",
 		"./ui/html/components/preview_article.html",
 	}
