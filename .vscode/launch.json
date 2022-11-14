@@ -2,8 +2,9 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Backend",
+            "name": "Backend | Debug",
             "type": "go",
+            "preLaunchTask": "Build | Debug | Backend",
             "request": "launch",
             "program": "${cwd}/backend",
             "showLog": true,
