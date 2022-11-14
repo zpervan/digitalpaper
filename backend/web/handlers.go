@@ -9,7 +9,6 @@ import (
 	"os"
 
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 )
 
 // For local (non-Docker) development/testing
@@ -139,20 +138,4 @@ func deleteUser() {
 func getUsers() {
 	// @TODO: Implement users fetching
 	logger.Info("Fetch users functionality not implemented")
-}
-
-func HandleRequests() *mux.Router {
-	router := mux.NewRouter()
-
-	// GET
-	router.Path("/posts").Methods("GET").HandlerFunc(getPosts)
-
-	// POST
-	router.Path("/posts").Methods("POST").HandlerFunc(createPost)
-
-	// Web page
-	router.Path("/").HandlerFunc(home)
-	router.PathPrefix("/").Handler(http.StripPrefix("/static", fileServer))
-
-	return router
 }
