@@ -31,7 +31,7 @@ func init() {
 	databaseTemp, err := Connect(databaseUrl)
 
 	if err != nil {
-		logger.Warn("Could not connect to database. Reason:" + err.Error())
+		logger.Warn("Could not connect to database. Reason: " + err.Error())
 		panic(err)
 	}
 

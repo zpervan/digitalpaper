@@ -7,6 +7,8 @@ import (
 	"digitalpaper/backend/core/logger"
 	"errors"
 	"fmt"
+	"time"
+
 	"gopkg.in/mgo.v2/bson"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,6 +22,7 @@ type Database struct {
 
 func Connect(dbUrl string) (Database, error) {
 	clientOptions := options.Client().ApplyURI(dbUrl)
+	clientOptions.SetServerSelectionTimeout(3 * time.Second)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 
 	if err != nil {
