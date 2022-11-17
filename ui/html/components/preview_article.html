@@ -1,12 +1,16 @@
 {{define "title"}}{{.Title}}{{end}}
 {{define "main"}}
 <div class='preview_article'>
-    <div class='metadata'>
-        <strong>{{.Title}} {{.Author}}</strong>
+    <div class='preview_header'>
+        <a href="#">
+            {{.Title}}
+        </a>
     </div>
-    <pre><code>{{.Body}}</code></pre>
-    <div class='metadata'>
-        <time>Created: {{.Date}}</time>
+    <div class='preview_metadata'>
+        {{.Author}}, {{.Date}}
+    </div>
+    <div class="preview_description">
+        {{.Body}}
     </div>
 </div>
 {{end}}
