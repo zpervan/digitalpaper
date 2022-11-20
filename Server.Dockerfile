@@ -7,6 +7,9 @@ WORKDIR ./Backend
 # Copy the project folders into the container's working directory
 COPY . .
 
+# Create/update the go.sum file
+RUN go mod tidy
+
 # Build it
 RUN go build -o server digitalpaper/backend
 
