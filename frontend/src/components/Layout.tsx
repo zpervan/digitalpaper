@@ -7,7 +7,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className=' bg-main-black h-screen'>
       <Header />
-      <main>{children}</main>
+      <main className=' px-60 pt-32'>{children}</main>
     </div>
   );
 };
