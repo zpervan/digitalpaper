@@ -5,7 +5,7 @@ interface Post {
   id: string;
   title: string;
   body: string;
-  date: Date;
+  date: string;
   author: string;
 }
 
@@ -15,26 +15,43 @@ function App() {
     return res.json();
   };
 
-  const { data, error, isLoading } = useQuery('allPosts', getPosts);
+  const { isSuccess, data, error, isLoading } = useQuery('allPosts', getPosts);
 
-  if (isLoading) return <h3 className=' text-main-white'>Loading...</h3>;
-
-  return (
-    <Layout>
-      <section className='flex justify-center'>
-        {data.map((el: Post) => {
-          <article key={el.id}>
-            <h1 className=' font-sourceSerifPro'>{el.title}</h1>
-            <div>
-              <p>{el.author}</p>
-              <p>{el.date.getDate()}</p>
-            </div>
-            <p>{el.body}</p>
-          </article>;
-        })}
-      </section>
-    </Layout>
-  );
+  if (isLoading)
+    return (
+      <Layout>
+        <div className='flex justify-center items-center'>
+          <h3 className=' text-main-white text-xl'>Loading...</h3>;
+        </div>
+      </Layout>
+    );
+  if (isSuccess) {
+    return (
+      <Layout>
+        <section className='flex text-main-white'>
+          {data.map((post: Post) => (
+            <article key={post.id} className=' w-1/2'>
+              <img
+                src='https://duet-cdn.vox-cdn.com/thumbor/0x0:6592x4399/1200x800/filters:focal(3296x2200:3297x2201):format(webp)/cdn.vox-cdn.com/uploads/chorus_asset/file/23893495/1238141654.jpg'
+                alt='rocket'
+                className='w-full h-auto'
+              />
+              <h1 className=' text-5xl font-extrabold mb-3 -mt-4 relative hover:text-main-red'>
+                {post.title}
+              </h1>
+              <p className='text-base font-extralight text-stone-200 '>
+                {post.body.slice(0, 200)}...
+              </p>
+              <div className='flex mt-2 text-sm font-light text-stone-400'>
+                <p className='mr-6 text-main-red'>{post.author}</p>
+                <p className=''>{post.date.split('T')[0]}</p>
+              </div>
+            </article>
+          ))}
+        </section>
+      </Layout>
+    );
+  }
 }
 
 export default App;
