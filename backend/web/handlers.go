@@ -4,7 +4,6 @@ import (
 	"digitalpaper/backend/core/logger"
 	"encoding/json"
 
-	"html/template"
 	"net/http"
 	"os"
 
@@ -15,8 +14,6 @@ import (
 const localDatabaseUrl = "mongodb://admin:password@localhost:27018"
 
 var database *Database
-var files []string
-var fileServer http.Handler
 
 func init() {
 	// Initialize database
@@ -36,37 +33,6 @@ func init() {
 	}
 
 	database = &databaseTemp
-
-	// Initialize web page and file server
-	// @TODO: Populate automatically HTML file list
-	files = []string{
-		"./ui/html/pages/base.html",
-		"./ui/html/components/header_with_image.html",
-		"./ui/html/components/navigation_bar.html",
-		"./ui/html/components/preview_article.html",
-	}
-
-	fileServer = http.FileServer(http.Dir("./ui/static/"))
-}
-
-func home(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		logger.Error(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	err = ts.ExecuteTemplate(w, "base", &postMock)
-	if err != nil {
-		logger.Error(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {

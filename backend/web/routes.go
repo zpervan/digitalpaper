@@ -2,7 +2,6 @@ package web
 
 import (
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 func HandleRequests() *mux.Router {
@@ -13,10 +12,6 @@ func HandleRequests() *mux.Router {
 
 	// POST
 	router.Path("/posts").Methods("POST").HandlerFunc(createPost)
-
-	// Web page
-	router.Path("/").HandlerFunc(home)
-	router.PathPrefix("/").Handler(http.StripPrefix("/static", fileServer))
 
 	return router
 }
