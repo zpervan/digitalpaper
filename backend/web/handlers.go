@@ -41,6 +41,8 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+    // @TODO: Find a more elegant way to enable the CORS policy
+    w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
@@ -72,6 +74,8 @@ func deletePost() {
 
 func getPosts(w http.ResponseWriter, req *http.Request) {
 	logger.Info("Fetching all posts...")
+
+    w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 
 	context := req.Context()
 
