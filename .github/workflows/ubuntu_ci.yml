@@ -11,17 +11,27 @@ on:
             - synchronize
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v3
-        with:
-          go-version: '1.19'
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-go@v3
+              with:
+                  go-version: '1.19'
 
-      - name: Install dependencies
-        run: go mod tidy
+            - uses: actions/setup-node@v3
+              with:
+                  version: '18.12.1'
 
-      - name: Build Project | All
-        run: go build -o server digitalpaper/backend
+            - name: Install backend dependencies
+              run: go mod tidy
+
+            - name: Build backend
+              run: go build -o server digitalpaper/backend
+
+            - name: Install frontend dependencies
+              run: npm install --prefix frontend
+
+            - name: Build frontend
+              run: npm run build --prefix frontend
