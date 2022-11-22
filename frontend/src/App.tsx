@@ -25,9 +25,10 @@ function App() {
         </div>
       </Layout>
     );
-  if (isSuccess) {
-    return (
-      <Layout>
+
+  return (
+    <Layout>
+      <>
         <section className='flex text-main-white'>
           {data.map((post: Post) => (
             <article key={post.id} className=' w-1/2'>
@@ -49,9 +50,9 @@ function App() {
             </article>
           ))}
         </section>
-      </Layout>
-    );
-  }
+      </>
+    </Layout>
+  );
 }
 
 export default App;
