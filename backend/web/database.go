@@ -43,7 +43,7 @@ func Connect(dbUrl string) (Database, error) {
 	return Database{Posts: postsCollection, Users: usersCollection}, nil
 }
 
-func (db Database) CreatePost(post *Post) error {
+func (db Database) createPost(post *Post) error {
 	_, err := db.Posts.InsertOne(context.TODO(), post)
 
 	if err != nil {
@@ -54,7 +54,7 @@ func (db Database) CreatePost(post *Post) error {
 	return nil
 }
 
-func (db Database) GetAllPosts(context *context.Context) ([]Post, error) {
+func (db Database) getAllPosts(context *context.Context) ([]Post, error) {
 	filter := bson.M{}
 	cursor, err := db.Posts.Find(*context, filter)
 
@@ -80,4 +80,29 @@ func (db Database) GetAllPosts(context *context.Context) ([]Post, error) {
 	}
 
 	return queryResults, nil
+}
+
+func (db Database) getPostById(ctx *context.Context, id string) (_ Post, err error) {
+	defer func() {
+		if err != nil {
+			logger.Error(fmt.Sprintf("could not fetch post by ID. Reason: %s", err))
+		}
+	}()
+
+	filter := bson.M{"id": id}
+	queryResult := db.Posts.FindOne(*ctx, filter)
+
+	err = queryResult.Err()
+	if err != nil {
+		return Post{}, err
+	}
+
+	var result Post
+	err = queryResult.Decode(&result)
+
+	if err != nil {
+		return Post{}, err
+	}
+
+	return result, nil
 }

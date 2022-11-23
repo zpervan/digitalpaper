@@ -3,8 +3,10 @@ package web
 import (
 	"digitalpaper/backend/core/logger"
 	"encoding/json"
+    "fmt"
+    "github.com/gorilla/mux"
 
-	"net/http"
+    "net/http"
 	"os"
 
 	"github.com/google/uuid"
@@ -59,7 +61,7 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 
 	newPost.Id = uuid.New().String()
 
-	err = h.Database.CreatePost(&newPost)
+	err = h.Database.createPost(&newPost)
 
 	if err != nil {
 		logger.Error("Could not create a new task in the database. Reason:" + err.Error())
@@ -83,7 +85,7 @@ func (h *Handler) getPosts(w http.ResponseWriter, req *http.Request) {
 
 	context := req.Context()
 
-	posts, err := h.Database.GetAllPosts(&context)
+	posts, err := h.Database.getAllPosts(&context)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -92,6 +94,34 @@ func (h *Handler) getPosts(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		logger.Error(err.Error())
 	}
+}
+
+func (h *Handler)getPostById(w http.ResponseWriter, req *http.Request) {
+    id := mux.Vars(req)["id"]
+    logger.Info(fmt.Sprintf("Fetching post with ID %s", id))
+
+    context := req.Context()
+
+    post, err := h.Database.getPostById(&context, id)
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while querying post by ID. %s", http.StatusInternalServerError, err.Error())
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+
+        return
+    }
+
+    err = json.NewEncoder(w).Encode(post)
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while querying post by ID. %s", http.StatusInternalServerError, err.Error())
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+
+        return
+    }
 }
 
 func (h *Handler) createUser() {
