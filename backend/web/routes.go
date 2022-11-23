@@ -1,17 +1,29 @@
 package web
 
 import (
-	"github.com/gorilla/mux"
+    "github.com/gorilla/mux"
 )
 
-func HandleRequests() *mux.Router {
+type Routes struct {
+    Handlers *Handler
+}
+
+func NewRoutes() *Routes{
+    routes := &Routes{}
+    routes.Handlers = NewHandler()
+
+    return routes
+}
+
+
+func (r Routes)HandleRequests() *mux.Router {
 	router := mux.NewRouter()
 
 	// GET
-	router.Path("/posts").Methods("GET").HandlerFunc(getPosts)
+	router.Path("/posts").Methods("GET").HandlerFunc(r.Handlers.getPosts)
 
 	// POST
-	router.Path("/posts").Methods("POST").HandlerFunc(createPost)
+    router.Path("/posts").Methods("POST").HandlerFunc(r.Handlers.createPost)
 
 	return router
 }
