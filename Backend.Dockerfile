@@ -2,7 +2,7 @@
 FROM golang:1.19.1
 
 # Define the work directory
-WORKDIR ./Backend
+WORKDIR ./backend
 
 # Copy the project folders into the container's working directory
 COPY . .

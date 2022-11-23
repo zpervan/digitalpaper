@@ -1,40 +1,53 @@
 version: "3"
 
 services:
+    frontend:
+        build:
+            context: .
+            dockerfile: Frontend.Dockerfile
+        container_name: digitalpaper_frontend
+        ports:
+            - "3000:3000"
+        env_file: .env
+        restart: always
+        depends_on:
+            - backend
+        networks:
+            - network
 
-  server:
-    build:
-      context: .
-      dockerfile: Server.Dockerfile
-    container_name: digitalpaper_server
-    ports:
-      - "3500:3500"
-    env_file: .env
-    restart: always
-    depends_on:
-      - database
-    networks:
-      - network
+    backend:
+        build:
+            context: .
+            dockerfile: Backend.Dockerfile
+        container_name: digitalpaper_backend
+        ports:
+            - "3500:3500"
+        env_file: .env
+        restart: always
+        depends_on:
+            - database
+        networks:
+            - network
 
-  database:
-    image: mongo
-    container_name: digitalpaper_database
-    restart: always
-    ports:
-      - "27018:27017"
-    env_file: .env
-    volumes:
-      - database_data:/data/db
-      - ./backend/database/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    networks:
-      - network
+    database:
+        image: mongo
+        container_name: digitalpaper_database
+        restart: always
+        ports:
+            - "27018:27017"
+        env_file: .env
+        volumes:
+            - database_data:/data/db
+            - ./backend/database/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+        networks:
+            - network
 
 volumes:
-  database_data:
+    database_data:
 
 networks:
-  network:
-    ipam:
-      driver: default
-      config:
-        - subnet: "192.168.42.0/24"
+    network:
+        ipam:
+            driver: default
+            config:
+                - subnet: "192.168.42.0/24"
