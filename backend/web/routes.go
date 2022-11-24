@@ -2,6 +2,7 @@ package web
 
 import (
     "github.com/gorilla/mux"
+    "net/http"
 )
 
 type Routes struct {
@@ -20,11 +21,12 @@ func (r Routes)HandleRequests() *mux.Router {
 	router := mux.NewRouter()
 
 	// GET
-	router.Path("/posts").Methods("GET").HandlerFunc(r.Handlers.getPosts)
-    router.Path("/posts/{id}").Methods("GET").HandlerFunc(r.Handlers.getPostById)
+    router.Path("/posts").Methods(http.MethodGet).HandlerFunc(r.Handlers.getPosts)
+    router.Path("/posts/{id}").Methods(http.MethodGet).HandlerFunc(r.Handlers.getPostById)
 
 	// POST
-    router.Path("/posts").Methods("POST").HandlerFunc(r.Handlers.createPost)
+    router.Path("/posts").Methods(http.MethodPost).HandlerFunc(r.Handlers.createPost)
+    router.Path("/users").Methods(http.MethodPost).HandlerFunc(r.Handlers.createUser)
 
 	return router
 }
