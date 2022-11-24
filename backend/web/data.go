@@ -8,6 +8,14 @@ type Post struct {
 	Author string `json:"author" bson:"author"`
 }
 
+type User struct {
+    Username string `json:"username" bson:"username"`
+    Name string `json:"name" bson:"name"`
+    Surname string `json:"surname" bson:"surname"`
+    Mail string `json:"mail" bson:"mail"`
+    Password string `json:"password" bson:"password"`
+}
+
 type Comment struct {
 	Id           string
 	Author       string
