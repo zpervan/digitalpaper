@@ -41,9 +41,9 @@ func NewHandler() *Handler {
 	return handler
 }
 
-func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/posts" {
-		http.NotFound(w, r)
+func (h *Handler) createPost(w http.ResponseWriter, req *http.Request) {
+	if req.URL.Path != "/posts" {
+		http.NotFound(w, req)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	var newPost Post
-	err := json.NewDecoder(r.Body).Decode(&newPost)
+	err := json.NewDecoder(req.Body).Decode(&newPost)
 
 	if err != nil {
 		logger.Error("Could not create new post. Reason:" + err.Error())
@@ -124,9 +124,42 @@ func (h *Handler)getPostById(w http.ResponseWriter, req *http.Request) {
     }
 }
 
-func (h *Handler) createUser() {
-	// @TODO: Implement user creation
-	logger.Info("Create user functionality not implemented")
+func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
+    if req.URL.Path != "/users" {
+        http.NotFound(w, req)
+        return
+    }
+
+    logger.Info("Creating new user")
+
+    w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+
+    var newUser User
+
+    err := json.NewDecoder(req.Body).Decode(&newUser)
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while creating new user. %s", http.StatusInternalServerError, err.Error())
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+
+        return
+    }
+
+    err = h.Database.createUser(req.Context(), &newUser)
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while creating new user. %s", http.StatusInternalServerError, err.Error())
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+
+        return
+    }
+
 }
 
 func (h *Handler) editUser() {

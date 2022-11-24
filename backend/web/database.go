@@ -106,3 +106,14 @@ func (db Database) getPostById(ctx *context.Context, id string) (_ Post, err err
 
 	return result, nil
 }
+
+func (db Database) createUser(ctx context.Context, user *User) error {
+	_, err := db.Users.InsertOne(ctx, user)
+
+	if err != nil {
+		return err
+	}
+
+	logger.Info("New user created")
+	return nil
+}
