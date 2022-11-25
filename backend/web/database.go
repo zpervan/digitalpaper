@@ -117,3 +117,22 @@ func (db Database) createUser(ctx context.Context, user *User) error {
 	logger.Info("New user created")
 	return nil
 }
+
+func (db Database) getUserByUsername(ctx context.Context, username string) (User, error) {
+    filter := bson.M{"username": username}
+    queryResult := db.Users.FindOne(ctx, filter)
+
+    if queryResult.Err() != nil {
+        logger.Warn("Didn't find any entry with the username \"" + username + "\"")
+        return User{}, nil
+    }
+
+    var user User
+    err := queryResult.Decode(&user)
+
+    if err != nil {
+        return User{}, err
+    }
+
+    return user, nil
+}

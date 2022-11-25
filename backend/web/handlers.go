@@ -1,15 +1,15 @@
 package web
 
 import (
-	"digitalpaper/backend/core/logger"
-	"encoding/json"
+    "digitalpaper/backend/core/logger"
+    "encoding/json"
     "fmt"
     "github.com/gorilla/mux"
 
     "net/http"
-	"os"
+    "os"
 
-	"github.com/google/uuid"
+    "github.com/google/uuid"
 )
 
 // For local (non-Docker) development/testing
@@ -172,7 +172,25 @@ func (h *Handler) deleteUser() {
 	logger.Info("Delete user functionality not implemented")
 }
 
-func (h *Handler) getUsers() {
-	// @TODO: Implement users fetching
-	logger.Info("Fetch users functionality not implemented")
+func (h *Handler) getUserByUsername(w http.ResponseWriter, req *http.Request) {
+    username := mux.Vars(req)["username"]
+
+    logger.Info("Getting user \"" + username + "\"")
+
+    w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+
+    user, err := h.Database.getUserByUsername(req.Context(), username)
+
+    err = json.NewEncoder(w).Encode(&user)
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while fetching user. %s", http.StatusInternalServerError, err.Error())
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+
+        return
+    }
 }
