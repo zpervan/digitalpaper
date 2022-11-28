@@ -90,7 +90,7 @@ func (h *Handler) getPosts(w http.ResponseWriter, req *http.Request) {
 		logger.Error(err.Error())
 	}
 
-	err = json.NewEncoder(w).Encode(posts)
+	err = json.NewEncoder(w).Encode(&posts)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -112,7 +112,7 @@ func (h *Handler)getPostById(w http.ResponseWriter, req *http.Request) {
         return
     }
 
-    err = json.NewEncoder(w).Encode(post)
+    err = json.NewEncoder(w).Encode(&post)
     if err != nil {
         errorMessage := fmt.Sprintf("%d - error while querying post by ID. %s", http.StatusInternalServerError, err.Error())
         logger.Error(errorMessage)
@@ -172,6 +172,35 @@ func (h *Handler) deleteUser() {
 	logger.Info("Delete user functionality not implemented")
 }
 
+func (h *Handler) getUsers(w http.ResponseWriter, req *http.Request) {
+    logger.Info("Fetching all users")
+
+    context := req.Context()
+
+    // @TODO: Add functionality to return a certain amount of user?
+    users, err := h.Database.getUsers(&context, -1)
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while fetching users. %s", http.StatusInternalServerError, err.Error())
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+
+        return
+    }
+
+    err = json.NewEncoder(w).Encode(&users)
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while fetching users. %s", http.StatusInternalServerError, err.Error())
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+
+        return
+    }
+}
+
 func (h *Handler) getUserByUsername(w http.ResponseWriter, req *http.Request) {
     username := mux.Vars(req)["username"]
 
@@ -182,10 +211,21 @@ func (h *Handler) getUserByUsername(w http.ResponseWriter, req *http.Request) {
     w.WriteHeader(http.StatusOK)
 
     user, err := h.Database.getUserByUsername(req.Context(), username)
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while fetching user. %s", http.StatusInternalServerError, err.Error())
+
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+
+        return
+    }
 
     err = json.NewEncoder(w).Encode(&user)
     if err != nil {
         errorMessage := fmt.Sprintf("%d - error while fetching user. %s", http.StatusInternalServerError, err.Error())
+
         logger.Error(errorMessage)
 
         w.WriteHeader(http.StatusInternalServerError)

@@ -15,6 +15,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// Configuration parameters
+var noFilterCriteria = bson.M{}
+
 type Database struct {
 	Posts *mongo.Collection
 	Users *mongo.Collection
@@ -116,6 +119,40 @@ func (db Database) createUser(ctx context.Context, user *User) error {
 
 	logger.Info("New user created")
 	return nil
+}
+
+func (db Database) getUsers(ctx *context.Context, limit int) ([]User, error) {
+    var filterOptions *options.FindOptions
+
+    if limit != -1 {
+        filterOptions = options.Find().SetLimit(int64(limit))
+    }
+
+    cursor, err := db.Users.Find(*ctx, noFilterCriteria, filterOptions)
+
+    if err != nil {
+        return []User{}, err
+    }
+
+    var results []User
+
+    for cursor.Next(*ctx) {
+        singleResult := User{}
+
+        err = cursor.Decode(&singleResult)
+
+        if err != nil {
+            return nil, err
+        }
+
+        results = append(results, singleResult)
+    }
+
+    if len(results) == 0 {
+        logger.Warn("Couldn't find any users in database")
+    }
+
+    return results, nil
 }
 
 func (db Database) getUserByUsername(ctx context.Context, username string) (User, error) {
