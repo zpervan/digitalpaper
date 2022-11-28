@@ -16,13 +16,10 @@ jobs:
 
         steps:
             - uses: actions/checkout@v2
+
             - uses: actions/setup-go@v3
               with:
                   go-version: '1.19'
-
-            - uses: actions/setup-node@v3
-              with:
-                  version: '18.12.1'
 
             - name: Install backend dependencies
               run: go mod tidy
@@ -30,8 +27,18 @@ jobs:
             - name: Build backend
               run: go build -o server digitalpaper/backend
 
-            - name: Install frontend dependencies
+            - uses: actions/setup-node@v3
+              with:
+                version: '18.12.1'
+
+            - name: NPM - Install frontend dependencies
               run: npm install --prefix frontend
 
-            - name: Build frontend
+            - name: NPM - Build frontend
               run: npm run build --prefix frontend
+
+            - name: YARN - Install frontend dependencies
+              run: yarn --cwd frontend install
+
+            - name: YARN - Build frontend
+              run: yarn --cwd frontend run build

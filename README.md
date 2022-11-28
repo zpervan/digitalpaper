@@ -1,14 +1,23 @@
-[![Ubuntu](https://github.com/zpervan/digitalpaper/actions/workflows/ubuntu_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/ubuntu_ci.yml)
+[![Ubuntu](https://github.com/zpervan/digitalpaper/actions/workflows/ubuntu_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/ubuntu_ci.yml) [![Windows](https://github.com/zpervan/digitalpaper/actions/workflows/windows_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/windows_ci.yml)
 
 # Digital Paper #
 
 ## Environment ##
 
 ### Frontend ###
+- Build systems: NPM and YARN
 - Typescript
 
 ### Backend ###
 - Golang 1.19.1
+
+### Third Party Libraries ###
+Frontend:
+- TODO
+
+Backend:
+- [Gorilla Mux](https://github.com/gorilla/mux)
+- [Google UUID](https://github.com/google/uuid)
 
 ## Setup ##
 
