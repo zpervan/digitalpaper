@@ -1,0 +1,38 @@
+name: Windows
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "1.19"
+
+      - uses: actions/setup-node@v3
+        with:
+          version: "18.12.1"
+
+      - name: Install backend dependencies
+        run: go mod tidy
+
+      - name: Build backend
+        run: go build -o server digitalpaper/backend
+
+      - name: Install frontend dependencies
+        run: cd frontend; npm install
+
+      - name: Build frontend
+        run: cd frontend; npm run build
