@@ -5,6 +5,7 @@
 go.sum
 logs.txt
 *.o
+*.exe
 
 # Logs
 logs
