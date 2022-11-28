@@ -64,13 +64,34 @@ func (h *Handler) createPost(w http.ResponseWriter, req *http.Request) {
 	err = h.Database.createPost(&newPost)
 
 	if err != nil {
-		logger.Error("Could not create a new task in the database. Reason:" + err.Error())
+        logger.Error("Could not create new post. Reason:" + err.Error())
 	}
 }
 
-func (h *Handler) editPost() {
-	// @TODO: Implement post editing/updating
-	logger.Info("Edit/update post functionality not implemented")
+func (h *Handler) editPost(w http.ResponseWriter, req *http.Request) {
+	logger.Info("Updating post")
+
+    var updatedPost Post
+    err := json.NewDecoder(req.Body).Decode(&updatedPost)
+
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while updating post. %s", http.StatusInternalServerError, err.Error())
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+    }
+
+    context := req.Context()
+    err = h.Database.updatePost(context, &updatedPost)
+
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while updating post. %s", http.StatusInternalServerError, err.Error())
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+    }
 }
 
 func (h *Handler) deletePost() {

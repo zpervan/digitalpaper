@@ -9,8 +9,7 @@ import (
 	"fmt"
 	"time"
 
-	"gopkg.in/mgo.v2/bson"
-
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -107,6 +106,25 @@ func (db Database) getPostById(ctx *context.Context, id string) (_ Post, err err
 	return result, nil
 }
 
+func (db Database) updatePost(ctx context.Context, updatedPost *Post) error {
+	filter := bson.D{{"id", updatedPost.Id}}
+	update := bson.D{{"$set", updatedPost}}
+
+	result, err := db.Posts.UpdateOne(ctx, filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	if result.ModifiedCount == 0 {
+		logger.Warn("Update of post with Id " + updatedPost.Id + " was unsuccessful")
+	} else {
+		logger.Info("Modified post with Id " + updatedPost.Id)
+	}
+
+	return nil
+}
+
 func (db Database) createUser(ctx context.Context, user *User) error {
 	_, err := db.Users.InsertOne(ctx, user)
 
@@ -119,20 +137,20 @@ func (db Database) createUser(ctx context.Context, user *User) error {
 }
 
 func (db Database) getUserByUsername(ctx context.Context, username string) (User, error) {
-    filter := bson.M{"username": username}
-    queryResult := db.Users.FindOne(ctx, filter)
+	filter := bson.M{"username": username}
+	queryResult := db.Users.FindOne(ctx, filter)
 
-    if queryResult.Err() != nil {
-        logger.Warn("Didn't find any entry with the username \"" + username + "\"")
-        return User{}, nil
-    }
+	if queryResult.Err() != nil {
+		logger.Warn("Didn't find any entry with the username \"" + username + "\"")
+		return User{}, nil
+	}
 
-    var user User
-    err := queryResult.Decode(&user)
+	var user User
+	err := queryResult.Decode(&user)
 
-    if err != nil {
-        return User{}, err
-    }
+	if err != nil {
+		return User{}, err
+	}
 
-    return user, nil
+	return user, nil
 }
