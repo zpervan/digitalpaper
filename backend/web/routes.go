@@ -33,6 +33,7 @@ func (r Routes)HandleRequests() *mux.Router {
 
     // PUT
     router.Path("/posts").Methods(http.MethodPut).HandlerFunc(r.Handlers.editPost)
+    router.Path("/users").Methods(http.MethodPut).HandlerFunc(r.Handlers.editUser)
 
 	return router
 }

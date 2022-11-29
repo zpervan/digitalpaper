@@ -183,9 +183,34 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (h *Handler) editUser() {
-	// @TODO: Implement user editing/updating
-	logger.Info("Edit/update user functionality not implemented")
+func (h *Handler) editUser(w http.ResponseWriter, req *http.Request) {
+    logger.Info("Editing user")
+
+    var updatedUser User
+    err := json.NewDecoder(req.Body).Decode(&updatedUser)
+
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while editing user. %s", http.StatusInternalServerError, err.Error())
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+
+        return
+    }
+
+    context := req.Context()
+    err = h.Database.updateUser(context, &updatedUser)
+    
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while editing user. %s", http.StatusInternalServerError, err.Error())
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+
+        return
+    }
 }
 
 func (h *Handler) deleteUser() {

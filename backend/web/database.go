@@ -173,6 +173,25 @@ func (db Database) getUsers(ctx *context.Context, limit int) ([]User, error) {
     return results, nil
 }
 
+func (db Database) updateUser(ctx context.Context, user *User) error {
+	filter := bson.D{{"username", user.Username}}
+	update := bson.D{{"$set", user}}
+
+	result, err := db.Users.UpdateOne(ctx, filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	if result.ModifiedCount == 0 {
+		logger.Warn("Update of user \"" + user.Username + "\" was unsuccessful")
+	} else {
+		logger.Info("Modified user \"" + user.Username + "\"")
+	}
+	
+	return nil
+}
+
 func (db Database) getUserByUsername(ctx context.Context, username string) (User, error) {
 	filter := bson.M{"username": username}
 	queryResult := db.Users.FindOne(ctx, filter)
