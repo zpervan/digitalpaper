@@ -26,7 +26,6 @@ func (r Routes)HandleRequests() *mux.Router {
     router.Path("/users").Methods(http.MethodGet).HandlerFunc(r.Handlers.getUsers)
     router.Path("/users/{username}").Methods(http.MethodGet).HandlerFunc(r.Handlers.getUserByUsername)
 
-
 	// POST
     router.Path("/posts").Methods(http.MethodPost).HandlerFunc(r.Handlers.createPost)
     router.Path("/users").Methods(http.MethodPost).HandlerFunc(r.Handlers.createUser)
