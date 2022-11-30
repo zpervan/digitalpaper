@@ -35,5 +35,8 @@ func (r Routes)HandleRequests() *mux.Router {
     router.Path("/posts").Methods(http.MethodPut).HandlerFunc(r.Handlers.editPost)
     router.Path("/users").Methods(http.MethodPut).HandlerFunc(r.Handlers.editUser)
 
+    // DELETE
+    router.Path("/posts/{id}").Methods(http.MethodDelete).HandlerFunc(r.Handlers.deletePost)
+
 	return router
 }
