@@ -94,9 +94,21 @@ func (h *Handler) editPost(w http.ResponseWriter, req *http.Request) {
     }
 }
 
-func (h *Handler) deletePost() {
-	// @TODO: Implement post deletion
-	logger.Info("Delete post functionality not implemented")
+func (h *Handler) deletePost(w http.ResponseWriter, req *http.Request) {
+	postId := mux.Vars(req)["id"]
+    logger.Info("Deleting post with Id " + postId)
+
+    context := req.Context()
+
+    err := h.Database.deletePost(context, postId)
+
+    if err != nil {
+        errorMessage := fmt.Sprintf("%d - error while deleting post. %s", http.StatusInternalServerError, err.Error())
+        logger.Error(errorMessage)
+
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte(errorMessage))
+    }
 }
 
 func (h *Handler) getPosts(w http.ResponseWriter, req *http.Request) {

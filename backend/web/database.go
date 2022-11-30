@@ -15,7 +15,7 @@ import (
 )
 
 // Configuration parameters
-var noFilterCriteria = bson.M{}
+var noFilterCriteria = bson.D{}
 
 type Database struct {
 	Posts *mongo.Collection
@@ -124,6 +124,24 @@ func (db Database) updatePost(ctx context.Context, updatedPost *Post) error {
 	} else {
 		logger.Info("Modified post with Id " + updatedPost.Id)
 	}
+
+	return nil
+}
+
+func (db Database) deletePost(ctx context.Context, postId string) error{
+	filter := bson.D{{"id", postId}}
+
+	result, err := db.Posts.DeleteOne(ctx, filter, nil)
+
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		logger.Warn("Deleting post with Id " + postId + " was unsuccessful")
+	} else {
+        logger.Info("Deleted post with Id " + postId)
+    }
 
 	return nil
 }
