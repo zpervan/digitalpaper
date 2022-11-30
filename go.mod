@@ -7,8 +7,6 @@ require (
 	go.mongodb.org/mongo-driver v1.11.0
 )
 
-require gopkg.in/yaml.v2 v2.4.0 // indirect
-
 require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/uuid v1.3.0
@@ -22,5 +20,4 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/text v0.3.7 // indirect
-	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )

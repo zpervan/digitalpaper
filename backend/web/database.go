@@ -45,7 +45,7 @@ func Connect(dbUrl string) (Database, error) {
 	return Database{Posts: postsCollection, Users: usersCollection}, nil
 }
 
-func (db Database) createPost(post *Post) error {
+func (db Database) createPost(ctx *context.Context, post *Post) error {
 	_, err := db.Posts.InsertOne(context.TODO(), post)
 
 	if err != nil {
