@@ -228,3 +228,21 @@ func (db Database) getUserByUsername(ctx context.Context, username string) (User
 
 	return user, nil
 }
+
+func (db Database) deleteUser(ctx context.Context, username string) error {
+	filter := bson.D{{"username", username}}
+
+	result, err := db.Users.DeleteOne(ctx, filter, nil)
+
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		logger.Warn("Deleting user with username \"" + username + "\" was unsuccessful")
+	} else {
+        logger.Info("Deleted user with username \"" + username + "\"")
+    }
+
+	return nil
+}

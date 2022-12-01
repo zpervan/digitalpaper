@@ -184,9 +184,19 @@ func (h *Handler) editUser(w http.ResponseWriter, req *http.Request) {
 	core.ResponseSuccess(&w, "User edited successfully")
 }
 
-func (h *Handler) deleteUser() {
-	// @TODO: Implement user deletion
-	logger.Info("Delete user functionality not implemented")
+func (h *Handler) deleteUser(w http.ResponseWriter, req *http.Request) {
+	username := mux.Vars(req)["username"]
+	logger.Info("Deleting user \"" + username + "\"")
+
+	context := req.Context()
+	err := h.Database.deleteUser(context, username)
+	if err != nil {
+		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while deleting user"}
+		errorResponse.Respond()
+		return
+	}
+
+	core.ResponseSuccess(&w, "User deleted successfully")
 }
 
 func (h *Handler) getUsers(w http.ResponseWriter, req *http.Request) {
