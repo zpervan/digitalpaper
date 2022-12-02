@@ -1,17 +1,20 @@
 package web
 
 import (
+    "digitalpaper/backend/core"
     "github.com/gorilla/mux"
     "net/http"
 )
 
 type Routes struct {
+    App *core.Application
     Handlers *Handler
 }
 
-func NewRoutes() *Routes{
+func NewRoutes(app *core.Application) *Routes{
     routes := &Routes{}
-    routes.Handlers = NewHandler()
+    routes.App = app
+    routes.Handlers = NewHandler(routes.App)
 
     return routes
 }

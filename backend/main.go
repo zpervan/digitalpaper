@@ -1,20 +1,24 @@
 package main
 
 import (
+	"digitalpaper/backend/core"
 	"digitalpaper/backend/core/logger"
 	"digitalpaper/backend/web"
 	"net/http"
 )
 
 func main() {
-    logger.Info("Initializing dependencies")
-    router := web.NewRoutes()
+	app := &core.Application{}
+	app.Log = logger.New()
 
-	logger.Info("Starting API server")
+    app.Log.Info("Initializing dependencies")
+    router := web.NewRoutes(app)
+
+	app.Log.Info("Starting API server")
 	err := http.ListenAndServe(":3500", router.HandleRequests())
 
 	if err != nil {
-		logger.Error("Error during server start-up. Reason: " + err.Error())
+		app.Log.Error("Error during server start-up. Reason: " + err.Error())
 		return
 	}
 }

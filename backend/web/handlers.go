@@ -2,7 +2,6 @@ package web
 
 import (
 	"digitalpaper/backend/core"
-	"digitalpaper/backend/core/logger"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -17,10 +16,11 @@ import (
 const localDatabaseUrl = "mongodb://admin:password@localhost:27018"
 
 type Handler struct {
+	App *core.Application
 	Database *Database
 }
 
-func NewHandler() *Handler {
+func NewHandler(app *core.Application) *Handler {
 	var databaseUrl string
 
 	if os.Getenv("TASKS_DB_ADDRESS") != "" {
@@ -29,21 +29,22 @@ func NewHandler() *Handler {
 		databaseUrl = localDatabaseUrl
 	}
 
-	databaseTemp, err := Connect(databaseUrl)
+	databaseTemp, err := NewDatabase(app, databaseUrl)
 
 	if err != nil {
-		logger.Warn("Could not connect to database. Reason: " + err.Error())
+		app.Log.Warn("Could not connect to database. Reason: " + err.Error())
 		panic(err)
 	}
 
 	handler := &Handler{}
-	handler.Database = &databaseTemp
+	handler.App = app
+	handler.Database = databaseTemp
 
 	return handler
 }
 
 func (h *Handler) createPost(w http.ResponseWriter, req *http.Request) {
-	logger.Info("Creating new post")
+	h.App.Log.Info("Creating new post")
 	var newPost Post
 	err := json.NewDecoder(req.Body).Decode(&newPost)
 
@@ -66,7 +67,7 @@ func (h *Handler) createPost(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *Handler) editPost(w http.ResponseWriter, req *http.Request) {
-	logger.Info("Editing post")
+	h.App.Log.Info("Editing post")
 
 	var updatedPost Post
 	err := json.NewDecoder(req.Body).Decode(&updatedPost)
@@ -89,7 +90,7 @@ func (h *Handler) editPost(w http.ResponseWriter, req *http.Request) {
 
 func (h *Handler) deletePost(w http.ResponseWriter, req *http.Request) {
 	postId := mux.Vars(req)["id"]
-	logger.Info("Deleting post with Id " + postId)
+	h.App.Log.Info("Deleting post with Id " + postId)
 
 	context := req.Context()
 	err := h.Database.deletePost(context, postId)
@@ -103,7 +104,7 @@ func (h *Handler) deletePost(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *Handler) getPosts(w http.ResponseWriter, req *http.Request) {
-	logger.Info("Fetching all posts")
+	h.App.Log.Info("Fetching all posts")
 
 	context := req.Context()
 	posts, err := h.Database.getAllPosts(&context)
@@ -123,7 +124,7 @@ func (h *Handler) getPosts(w http.ResponseWriter, req *http.Request) {
 
 func (h *Handler) getPostById(w http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
-	logger.Info(fmt.Sprintf("Fetching post with ID %s", id))
+	h.App.Log.Info(fmt.Sprintf("Fetching post with ID %s", id))
 
 	context := req.Context()
 	post, err := h.Database.getPostById(&context, id)
@@ -142,7 +143,7 @@ func (h *Handler) getPostById(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
-	logger.Info("Creating new user")
+	h.App.Log.Info("Creating new user")
 
 	var newUser User
 	err := json.NewDecoder(req.Body).Decode(&newUser)
@@ -163,7 +164,7 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *Handler) editUser(w http.ResponseWriter, req *http.Request) {
-	logger.Info("Editing user")
+	h.App.Log.Info("Editing user")
 
 	var updatedUser User
 	err := json.NewDecoder(req.Body).Decode(&updatedUser)
@@ -186,7 +187,7 @@ func (h *Handler) editUser(w http.ResponseWriter, req *http.Request) {
 
 func (h *Handler) deleteUser(w http.ResponseWriter, req *http.Request) {
 	username := mux.Vars(req)["username"]
-	logger.Info("Deleting user \"" + username + "\"")
+	h.App.Log.Info("Deleting user \"" + username + "\"")
 
 	context := req.Context()
 	err := h.Database.deleteUser(context, username)
@@ -200,7 +201,7 @@ func (h *Handler) deleteUser(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *Handler) getUsers(w http.ResponseWriter, req *http.Request) {
-	logger.Info("Fetching all users")
+	h.App.Log.Info("Fetching all users")
 
 	context := req.Context()
 
@@ -223,11 +224,7 @@ func (h *Handler) getUsers(w http.ResponseWriter, req *http.Request) {
 func (h *Handler) getUserByUsername(w http.ResponseWriter, req *http.Request) {
 	username := mux.Vars(req)["username"]
 
-	logger.Info("Getting user \"" + username + "\"")
-
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	h.App.Log.Info("Getting user \"" + username + "\"")
 
 	user, err := h.Database.getUserByUsername(req.Context(), username)
 	if err != nil {
