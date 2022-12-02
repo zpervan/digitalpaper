@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"digitalpaper/backend/core/logger"
 )
 
 type ErrorResponse struct {
@@ -17,7 +15,6 @@ type ErrorResponse struct {
 
 func (er *ErrorResponse) Respond() {
 	errorMessage := fmt.Sprintf("%d - %s. %s", er.StatusCode, er.Message, er.RaisedError.Error())
-	logger.Error(errorMessage)
 
 	(*er.ResponseWriter).WriteHeader(http.StatusInternalServerError)
 	(*er.ResponseWriter).Write([]byte(errorMessage))

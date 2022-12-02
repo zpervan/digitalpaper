@@ -4,7 +4,7 @@ package web
 
 import (
 	"context"
-	"digitalpaper/backend/core/logger"
+	"digitalpaper/backend/core"
 	"errors"
 	"fmt"
 	"time"
@@ -18,31 +18,44 @@ import (
 var noFilterCriteria = bson.D{}
 
 type Database struct {
+	app   *core.Application
 	Posts *mongo.Collection
 	Users *mongo.Collection
 }
 
-func Connect(dbUrl string) (Database, error) {
+func NewDatabase(app *core.Application, dbUrl string) (*Database, error) {
+	database := &Database{}
+	database.app = app
+
+	err := database.Connect(dbUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return database, nil
+}
+
+func (db *Database) Connect(dbUrl string) error {
 	clientOptions := options.Client().ApplyURI(dbUrl)
 	clientOptions.SetServerSelectionTimeout(3 * time.Second)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 
 	if err != nil {
-		return Database{}, err
+		return err
 	}
 
 	// Check if the database connection is alive
 	if err := client.Ping(context.TODO(), nil); err != nil {
-		return Database{}, err
+		return err
 	}
 
 	// @TODO: Extract names in .env file
-	postsCollection := client.Database("digital_paper").Collection("posts")
-	usersCollection := client.Database("digital_paper").Collection("users")
+	db.Posts = client.Database("digital_paper").Collection("posts")
+	db.Users = client.Database("digital_paper").Collection("users")
 
-	logger.Info("Database connection established")
+	db.app.Log.Info("Database connection established")
 
-	return Database{Posts: postsCollection, Users: usersCollection}, nil
+	return nil
 }
 
 func (db Database) createPost(ctx *context.Context, post *Post) error {
@@ -52,7 +65,7 @@ func (db Database) createPost(ctx *context.Context, post *Post) error {
 		return err
 	}
 
-	logger.Info(fmt.Sprintf("Created new post with title \"%s\" and ID \"%s\"", post.Title, post.Id))
+	db.app.Log.Info(fmt.Sprintf("Created new post with title \"%s\" and ID \"%s\"", post.Title, post.Id))
 	return nil
 }
 
@@ -78,7 +91,7 @@ func (db Database) getAllPosts(context *context.Context) ([]Post, error) {
 	}
 
 	if len(queryResults) == 0 {
-		logger.Warn("No tasks available")
+		db.app.Log.Warn("No tasks available")
 	}
 
 	return queryResults, nil
@@ -87,7 +100,7 @@ func (db Database) getAllPosts(context *context.Context) ([]Post, error) {
 func (db Database) getPostById(ctx *context.Context, id string) (_ Post, err error) {
 	defer func() {
 		if err != nil {
-			logger.Error(fmt.Sprintf("could not fetch post by ID. Reason: %s", err))
+			db.app.Log.Error(fmt.Sprintf("could not fetch post by ID %s. Reason: %s", id, err))
 		}
 	}()
 
@@ -120,15 +133,15 @@ func (db Database) updatePost(ctx context.Context, updatedPost *Post) error {
 	}
 
 	if result.ModifiedCount == 0 {
-		logger.Warn("Update of post with Id " + updatedPost.Id + " was unsuccessful")
+		db.app.Log.Warn("Update of post with Id " + updatedPost.Id + " was unsuccessful")
 	} else {
-		logger.Info("Modified post with Id " + updatedPost.Id)
+		db.app.Log.Info("Modified post with Id " + updatedPost.Id)
 	}
 
 	return nil
 }
 
-func (db Database) deletePost(ctx context.Context, postId string) error{
+func (db Database) deletePost(ctx context.Context, postId string) error {
 	filter := bson.D{{"id", postId}}
 
 	result, err := db.Posts.DeleteOne(ctx, filter, nil)
@@ -138,10 +151,10 @@ func (db Database) deletePost(ctx context.Context, postId string) error{
 	}
 
 	if result.DeletedCount == 0 {
-		logger.Warn("Deleting post with Id " + postId + " was unsuccessful")
+		db.app.Log.Warn("Deleting post with Id " + postId + " was unsuccessful")
 	} else {
-        logger.Info("Deleted post with Id " + postId)
-    }
+		db.app.Log.Info("Deleted post with Id " + postId)
+	}
 
 	return nil
 }
@@ -153,42 +166,67 @@ func (db Database) createUser(ctx context.Context, user *User) error {
 		return err
 	}
 
-	logger.Info("New user created")
+	db.app.Log.Info("New user created")
 	return nil
 }
 
 func (db Database) getUsers(ctx *context.Context, limit int) ([]User, error) {
-    var filterOptions *options.FindOptions
+	var filterOptions *options.FindOptions
 
-    if limit != -1 {
-        filterOptions = options.Find().SetLimit(int64(limit))
-    }
+	if limit != -1 {
+		filterOptions = options.Find().SetLimit(int64(limit))
+	}
 
-    cursor, err := db.Users.Find(*ctx, noFilterCriteria, filterOptions)
+	cursor, err := db.Users.Find(*ctx, noFilterCriteria, filterOptions)
 
-    if err != nil {
-        return []User{}, err
-    }
+	if err != nil {
+		return []User{}, err
+	}
 
-    var results []User
+	var results []User
 
-    for cursor.Next(*ctx) {
-        singleResult := User{}
+	for cursor.Next(*ctx) {
+		singleResult := User{}
 
-        err = cursor.Decode(&singleResult)
+		err = cursor.Decode(&singleResult)
 
-        if err != nil {
-            return nil, err
-        }
+		if err != nil {
+			return nil, err
+		}
 
-        results = append(results, singleResult)
-    }
+		results = append(results, singleResult)
+	}
 
-    if len(results) == 0 {
-        logger.Warn("Couldn't find any users in database")
-    }
+	if len(results) == 0 {
+		db.app.Log.Warn("Couldn't find any users in database")
+	}
 
-    return results, nil
+	return results, nil
+}
+
+func (db Database) getUserByUsername(ctx context.Context, username string) (_ User, err error) {
+	defer func() {
+		if err != nil {
+			db.app.Log.Error(fmt.Sprintf("could not get user by username \"%s\". Reason: %s", username, err))
+		}
+	}()
+
+	filter := bson.M{"username": username}
+	queryResult := db.Users.FindOne(ctx, filter)
+
+	err = queryResult.Err()
+	if err != nil {
+		return User{}, err
+	}
+
+	var user User
+	err = queryResult.Decode(&user)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, nil
 }
 
 func (db Database) updateUser(ctx context.Context, user *User) error {
@@ -202,31 +240,12 @@ func (db Database) updateUser(ctx context.Context, user *User) error {
 	}
 
 	if result.ModifiedCount == 0 {
-		logger.Warn("Update of user \"" + user.Username + "\" was unsuccessful")
+		db.app.Log.Warn("Update of user \"" + user.Username + "\" was unsuccessful")
 	} else {
-		logger.Info("Modified user \"" + user.Username + "\"")
+		db.app.Log.Info("Modified user \"" + user.Username + "\"")
 	}
-	
+
 	return nil
-}
-
-func (db Database) getUserByUsername(ctx context.Context, username string) (User, error) {
-	filter := bson.M{"username": username}
-	queryResult := db.Users.FindOne(ctx, filter)
-
-	if queryResult.Err() != nil {
-		logger.Warn("Didn't find any entry with the username \"" + username + "\"")
-		return User{}, nil
-	}
-
-	var user User
-	err := queryResult.Decode(&user)
-
-	if err != nil {
-		return User{}, err
-	}
-
-	return user, nil
 }
 
 func (db Database) deleteUser(ctx context.Context, username string) error {
@@ -239,10 +258,10 @@ func (db Database) deleteUser(ctx context.Context, username string) error {
 	}
 
 	if result.DeletedCount == 0 {
-		logger.Warn("Deleting user with username \"" + username + "\" was unsuccessful")
+		db.app.Log.Warn("Deleting user with username \"" + username + "\" was unsuccessful")
 	} else {
-        logger.Info("Deleted user with username \"" + username + "\"")
-    }
+		db.app.Log.Info("Deleted user with username \"" + username + "\"")
+	}
 
 	return nil
 }
