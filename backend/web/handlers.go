@@ -2,6 +2,7 @@ package web
 
 import (
 	"digitalpaper/backend/core"
+	"digitalpaper/backend/database"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -17,7 +18,7 @@ const localDatabaseUrl = "mongodb://admin:password@localhost:27018"
 
 type Handler struct {
 	App *core.Application
-	Database *Database
+	Database *database.Database
 }
 
 func NewHandler(app *core.Application) *Handler {
@@ -29,7 +30,7 @@ func NewHandler(app *core.Application) *Handler {
 		databaseUrl = localDatabaseUrl
 	}
 
-	databaseTemp, err := NewDatabase(app, databaseUrl)
+	databaseTemp, err := database.NewDatabase(app, databaseUrl)
 
 	if err != nil {
 		app.Log.Warn("Could not connect to database. Reason: " + err.Error())
@@ -45,7 +46,7 @@ func NewHandler(app *core.Application) *Handler {
 
 func (h *Handler) createPost(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info("Creating new post")
-	var newPost Post
+	var newPost core.Post
 	err := json.NewDecoder(req.Body).Decode(&newPost)
 
 	if err != nil {
@@ -56,7 +57,7 @@ func (h *Handler) createPost(w http.ResponseWriter, req *http.Request) {
 
 	context := req.Context()
 	newPost.Id = uuid.New().String()
-	err = h.Database.createPost(&context, &newPost)
+	err = h.Database.CreatePost(&context, &newPost)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating post"}
 		errorResponse.Respond()
@@ -69,7 +70,7 @@ func (h *Handler) createPost(w http.ResponseWriter, req *http.Request) {
 func (h *Handler) editPost(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info("Editing post")
 
-	var updatedPost Post
+	var updatedPost core.Post
 	err := json.NewDecoder(req.Body).Decode(&updatedPost)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while updating post"}
@@ -78,7 +79,7 @@ func (h *Handler) editPost(w http.ResponseWriter, req *http.Request) {
 	}
 
 	context := req.Context()
-	err = h.Database.updatePost(context, &updatedPost)
+	err = h.Database.UpdatePost(context, &updatedPost)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while updating post"}
 		errorResponse.Respond()
@@ -93,7 +94,7 @@ func (h *Handler) deletePost(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info("Deleting post with Id " + postId)
 
 	context := req.Context()
-	err := h.Database.deletePost(context, postId)
+	err := h.Database.DeletePost(context, postId)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while deleting post"}
 		errorResponse.Respond()
@@ -107,7 +108,7 @@ func (h *Handler) getPosts(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info("Fetching all posts")
 
 	context := req.Context()
-	posts, err := h.Database.getAllPosts(&context)
+	posts, err := h.Database.GetAllPosts(&context)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting posts"}
 		errorResponse.Respond()
@@ -127,7 +128,7 @@ func (h *Handler) getPostById(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info(fmt.Sprintf("Fetching post with ID %s", id))
 
 	context := req.Context()
-	post, err := h.Database.getPostById(&context, id)
+	post, err := h.Database.GetPostById(&context, id)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while querying post"}
 		errorResponse.Respond()
@@ -145,7 +146,7 @@ func (h *Handler) getPostById(w http.ResponseWriter, req *http.Request) {
 func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info("Creating new user")
 
-	var newUser User
+	var newUser core.User
 	err := json.NewDecoder(req.Body).Decode(&newUser)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating user"}
@@ -153,7 +154,7 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = h.Database.createUser(req.Context(), &newUser)
+	err = h.Database.CreateUser(req.Context(), &newUser)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating user"}
 		errorResponse.Respond()
@@ -166,7 +167,7 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 func (h *Handler) editUser(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info("Editing user")
 
-	var updatedUser User
+	var updatedUser core.User
 	err := json.NewDecoder(req.Body).Decode(&updatedUser)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while editing user"}
@@ -175,7 +176,7 @@ func (h *Handler) editUser(w http.ResponseWriter, req *http.Request) {
 	}
 
 	context := req.Context()
-	err = h.Database.updateUser(context, &updatedUser)
+	err = h.Database.UpdateUser(context, &updatedUser)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while editing user"}
 		errorResponse.Respond()
@@ -190,7 +191,7 @@ func (h *Handler) deleteUser(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info("Deleting user \"" + username + "\"")
 
 	context := req.Context()
-	err := h.Database.deleteUser(context, username)
+	err := h.Database.DeleteUser(context, username)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while deleting user"}
 		errorResponse.Respond()
@@ -206,7 +207,7 @@ func (h *Handler) getUsers(w http.ResponseWriter, req *http.Request) {
 	context := req.Context()
 
 	// @TODO: Add functionality to return a certain amount of user?
-	users, err := h.Database.getUsers(&context, -1)
+	users, err := h.Database.GetUsers(&context, -1)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting users"}
 		errorResponse.Respond()
@@ -226,7 +227,7 @@ func (h *Handler) getUserByUsername(w http.ResponseWriter, req *http.Request) {
 
 	h.App.Log.Info("Getting user \"" + username + "\"")
 
-	user, err := h.Database.getUserByUsername(req.Context(), username)
+	user, err := h.Database.GetUserByUsername(req.Context(), username)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting user"}
 		errorResponse.Respond()
