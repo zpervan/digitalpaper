@@ -21,6 +21,7 @@ type Database struct {
 	app   *core.Application
 	Posts *mongo.Collection
 	Users *mongo.Collection
+	Sessions *mongo.Collection
 }
 
 func NewDatabase(app *core.Application, dbUrl string) (*Database, error) {
@@ -52,6 +53,7 @@ func (db *Database) Connect(dbUrl string) error {
 	// @TODO: Extract names in .env file
 	db.Posts = client.Database("digital_paper").Collection("posts")
 	db.Users = client.Database("digital_paper").Collection("users")
+	db.Sessions = client.Database("digital_paper").Collection("sessions")
 
 	db.app.Log.Info("Database connection established")
 

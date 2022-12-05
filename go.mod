@@ -3,7 +3,10 @@ module digitalpaper
 go 1.19
 
 require (
+	github.com/alexedwards/scs/mongodbstore v0.0.0-20220528130143-d93ace5be94b
+	github.com/alexedwards/scs/v2 v2.5.0
 	github.com/gorilla/mux v1.8.0
+	github.com/justinas/alice v1.2.0
 	go.mongodb.org/mongo-driver v1.11.0
 )
 
