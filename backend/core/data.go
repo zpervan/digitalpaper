@@ -1,4 +1,4 @@
-package web
+package core
 
 type Post struct {
 	Id     string `json:"id" bson:"id"`
