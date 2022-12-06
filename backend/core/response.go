@@ -27,7 +27,8 @@ func ResponseSuccess(w *http.ResponseWriter, message string) {
 	(*w).Write([]byte(message))
 }
 
-func EncodeResponse(w *http.ResponseWriter, data any) error {
+func EncodeResponse(w *http.ResponseWriter, statusCode int, data any) error {
+	(*w).WriteHeader(statusCode)
 	(*w).Header().Set(CorsString, AllowedAddressForCors)
 	err := json.NewEncoder(*w).Encode(data)
 
