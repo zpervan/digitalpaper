@@ -1,11 +1,16 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-      {
-        "label": "Build | Debug | Backend",
-        "type": "shell",
-        "command": "go build -gcflags=all=\"-N -l\" -o backend_server.o digitalpaper/backend",
-        "group": "build"
-      }
-    ]
-  }
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build | Debug | Backend",
+      "type": "shell",
+      "windows": {
+        "command": "go build -o backend_server.o digitalpaper/backend"
+      },
+      "linux": {
+        "command": "go build -gcflags=all=\"-N -l\" -o backend_server.o digitalpaper/backend"
+      },
+      "group": "build"
+    }
+  ]
+}
