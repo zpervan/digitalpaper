@@ -5,6 +5,7 @@ import (
 	"digitalpaper/backend/database"
 	"encoding/json"
 	"fmt"
+
 	"github.com/gorilla/mux"
 
 	"net/http"
@@ -17,7 +18,7 @@ import (
 const localDatabaseUrl = "mongodb://admin:password@localhost:27018"
 
 type Handler struct {
-	App *core.Application
+	App      *core.Application
 	Database *database.Database
 }
 
@@ -115,7 +116,7 @@ func (h *Handler) getPosts(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = core.EncodeResponse(&w, &posts)
+	err = core.EncodeResponse(&w, http.StatusOK, &posts)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting posts"}
 		errorResponse.Respond()
@@ -135,7 +136,7 @@ func (h *Handler) getPostById(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = core.EncodeResponse(&w, &post)
+	err = core.EncodeResponse(&w, http.StatusOK, &post)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while querying post"}
 		errorResponse.Respond()
@@ -151,6 +152,17 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating user"}
 		errorResponse.Respond()
+		return
+	}
+
+	validationResult := core.ValidateUser(&newUser)
+	if validationResult != nil {
+		err = core.EncodeResponse(&w, http.StatusNotAcceptable, validationResult)
+		if err != nil {
+			h.App.Log.Error("cannot encode validation results. reason: " + err.Error())
+			return
+		}
+
 		return
 	}
 
@@ -214,7 +226,7 @@ func (h *Handler) getUsers(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = core.EncodeResponse(&w, &users)
+	err = core.EncodeResponse(&w, http.StatusOK, &users)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting users"}
 		errorResponse.Respond()
@@ -234,7 +246,7 @@ func (h *Handler) getUserByUsername(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = core.EncodeResponse(&w, &user)
+	err = core.EncodeResponse(&w, http.StatusOK, &user)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting user"}
 		errorResponse.Respond()
