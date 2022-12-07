@@ -163,6 +163,29 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		validationError := "error while validating input data during user creation:"
+
+		for _, value := range validationResult {
+			validationError += "\n" + value.Attribute + " - " + value.Error
+		}
+
+		h.App.Log.Warn(validationError)
+
+		return
+	}
+
+	userExists, err := h.Database.UserExists(req.Context(), &newUser)
+	if err != nil {
+		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while checking user existence"}
+		errorResponse.Respond()
+
+		h.App.Log.Error("error while checking user existence. reason: " + err.Error())
+		return
+	}
+
+	if userExists {
+		w.WriteHeader(http.StatusNotAcceptable)
+		w.Write([]byte("user with that username or mail already exists"))
 		return
 	}
 

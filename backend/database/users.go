@@ -116,3 +116,19 @@ func (db Database) DeleteUser(ctx context.Context, username string) error {
 
 	return nil
 }
+
+func (db Database) UserExists(ctx context.Context, user *core.User) (bool, error) {
+	filterByUsername := bson.D{{"username", user.Username}}
+	resultByUsername, err := db.Users.CountDocuments(ctx, filterByUsername, nil)
+	if err != nil {
+		return false, err
+	}
+
+	filterByMail := bson.D{{"mail", user.Mail}}
+	resultByMail, err :=  db.Users.CountDocuments(ctx, filterByMail,nil)
+	if err != nil {
+		return false, err
+	}
+
+	return (resultByUsername != 0) || (resultByMail != 0), nil
+}
