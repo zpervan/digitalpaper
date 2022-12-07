@@ -193,15 +193,13 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while checking user existence"}
 		errorResponse.Respond()
 
-		h.App.Log.Error(errorResponse.Message)
+		h.App.Log.Error("error while checking user existence. reason: " + err.Error())
 		return
 	}
 
 	if userExists {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusBadRequest, Message: "user with that username or mail already exists"}
-		errorResponse.Respond()
-
-		h.App.Log.Error(errorResponse.Message)
+		w.WriteHeader(http.StatusNotAcceptable)
+		w.Write([]byte("user with that username or mail already exits"))
 		return
 	}
 
