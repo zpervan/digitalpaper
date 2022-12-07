@@ -37,9 +37,9 @@ func (v *Validator) MaxLength(value *string, maxLength int) {
 }
 
 func (v *Validator) MatchesPattern(value *string, pattern *regexp.Regexp) {
-	isValidMail := pattern.MatchString(*value)
+	isValidPattern := pattern.MatchString(*value)
 
-	if !isValidMail {
+	if !isValidPattern {
 		v.ValidationResults = append(v.ValidationResults, ValidationResult{v.Tag, "value is not valid"})
 	}
 }
