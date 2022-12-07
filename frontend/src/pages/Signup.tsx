@@ -6,7 +6,7 @@ const Signup = () => {
       <main className='flex justify-center'>
         <section className='w-1/2 flex flex-col justify-center'>
           <h2 className='text-white text-3xl mb-6 font-extrabold'>Sign Up</h2>
-          <form className='flex flex-col mt-4'>
+          <form className='flex flex-col mt-4 text-main-white'>
             <section className='flex justify-between '>
               <input
                 type='text'
