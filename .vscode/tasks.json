@@ -11,6 +11,12 @@
         "command": "go build -gcflags=all=\"-N -l\" -o backend_server.o digitalpaper/backend"
       },
       "group": "build"
+    },
+    {
+      "label": "Test | Backend",
+      "type": "shell",
+      "command": "go test digitalpaper/backend/... -v",
+      "group": "build"
     }
   ]
 }

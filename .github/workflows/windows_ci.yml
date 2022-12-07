@@ -31,6 +31,9 @@ jobs:
       - name: Build backend
         run: go build -o server digitalpaper/backend
 
+      - name: Run backend tests
+        run: go test digitalpaper/backend/... -v
+
       - name: Install frontend dependencies
         run: cd frontend; npm install
 
