@@ -18,7 +18,9 @@ const Header = () => {
         <Link to='/create' className='ml-12 hover:text-main-white'>
           NEW POST
         </Link>
-        <p className='ml-20 hover:text-main-white'>Register</p>
+        <Link to='/signup' className='ml-20 hover:text-main-white'>
+          Sign up
+        </Link>
       </section>
     </header>
   );
