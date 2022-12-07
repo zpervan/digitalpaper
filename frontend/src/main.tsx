@@ -6,6 +6,7 @@ import { QueryClientProvider, QueryClient } from 'react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import CreatePost from './pages/CreatePost';
 import About from './pages/About';
+import Signup from './pages/Signup';
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
   {
     path: '/create',
     element: <CreatePost />,
+  },
+  {
+    path: '/signup',
+    element: <Signup />,
   },
 ]);
 
