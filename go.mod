@@ -8,6 +8,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/justinas/alice v1.2.0
 	github.com/stretchr/testify v1.6.1
+	github.com/rs/cors v1.8.2
 	go.mongodb.org/mongo-driver v1.11.0
 )
 
