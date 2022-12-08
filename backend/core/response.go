@@ -14,22 +14,19 @@ type ErrorResponse struct {
 }
 
 func (er *ErrorResponse) Respond() {
+	if er.RaisedError == nil {
+		er.RaisedError = fmt.Errorf("")
+	}
+
 	errorMessage := fmt.Sprintf("%d - %s. %s", er.StatusCode, er.Message, er.RaisedError.Error())
 
-	(*er.ResponseWriter).WriteHeader(http.StatusInternalServerError)
-	(*er.ResponseWriter).Write([]byte(errorMessage))
-}
-
-func ResponseSuccess(w *http.ResponseWriter, message string) {
-	(*w).WriteHeader(http.StatusOK)
-	(*w).Header().Set("Content-Type", "application/json")
-	(*w).Header().Set(CorsString, AllowedAddressForCors)
-	(*w).Write([]byte(message))
+	(*er.ResponseWriter).WriteHeader(er.StatusCode)
+	(*er.ResponseWriter).Header().Set("X-Status-Reason", errorMessage)
 }
 
 func EncodeResponse(w *http.ResponseWriter, statusCode int, data any) error {
 	(*w).WriteHeader(statusCode)
-	(*w).Header().Set(CorsString, AllowedAddressForCors)
+
 	err := json.NewEncoder(*w).Encode(data)
 
 	if err != nil {
