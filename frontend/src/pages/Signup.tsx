@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Layout from '../components/Layout';
+import axios from 'axios';
 
 const Signup = () => {
   const [data, setData] = useState({
@@ -10,16 +11,10 @@ const Signup = () => {
     password: '',
   });
 
-  const addUser = async (e: React.FormEvent, url: string) => {
+  const addUser = (e: React.FormEvent, url: string) => {
     e.preventDefault();
-    const res = await fetch(url, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
+
+    axios.post(url, data).then((res) => console.log(res));
 
     setData({
       username: '',
@@ -28,7 +23,6 @@ const Signup = () => {
       mail: '',
       password: '',
     });
-    return res.json();
   };
 
   return (
@@ -38,11 +32,7 @@ const Signup = () => {
           <h2 className='text-white text-3xl mb-6 font-extrabold'>Sign Up</h2>
           <form
             className='flex flex-col mt-4 text-main-white'
-            onSubmit={(e) =>
-              addUser(e, 'http://localhost:3500/users').then((res) =>
-                console.log(res)
-              )
-            }
+            onSubmit={(e) => addUser(e, 'http://localhost:3500/users')}
           >
             <section className='flex justify-between '>
               <input
