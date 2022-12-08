@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"digitalpaper/backend/core"
@@ -27,10 +28,11 @@ func (db *Database) Connect(dbUrl string) error {
 		return err
 	}
 
-	// @TODO: Extract names in .env file
-	db.Posts = client.Database("digital_paper").Collection("posts")
-	db.Users = client.Database("digital_paper").Collection("users")
-	db.Sessions = client.Database("digital_paper").Collection("sessions")
+	database := os.Getenv("MONGO_INITDB_DATABASE")
+
+	db.Posts = client.Database(database).Collection("posts")
+	db.Users = client.Database(database).Collection("users")
+	db.Sessions = client.Database(database).Collection("sessions")
 
 	db.app.Log.Info("Database connection established")
 

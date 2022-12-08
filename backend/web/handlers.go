@@ -25,8 +25,8 @@ type Handler struct {
 func NewHandler(app *core.Application) *Handler {
 	var databaseUrl string
 
-	if os.Getenv("TASKS_DB_ADDRESS") != "" {
-		databaseUrl = os.Getenv("TASKS_DB_ADDRESS")
+	if os.Getenv("DB_URL") != "" {
+		databaseUrl = os.Getenv("DB_URL")
 	} else {
 		databaseUrl = localDatabaseUrl
 	}
