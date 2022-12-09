@@ -1,4 +1,7 @@
-[![Ubuntu](https://github.com/zpervan/digitalpaper/actions/workflows/ubuntu_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/ubuntu_ci.yml) [![Windows](https://github.com/zpervan/digitalpaper/actions/workflows/windows_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/windows_ci.yml)
+[![Backend Ubuntu](https://github.com/zpervan/digitalpaper/actions/workflows/backend_ubuntu_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/backend_ubuntu_ci.yml)
+[![Backend Windows](https://github.com/zpervan/digitalpaper/actions/workflows/backend_windows_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/backend_windows_ci.yml)
+[![Frontend Ubuntu](https://github.com/zpervan/digitalpaper/actions/workflows/frontend_ubuntu_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/frontend_ubuntu_ci.yml)
+[![Frontend Windows](https://github.com/zpervan/digitalpaper/actions/workflows/frontend_windows_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/frontend_windows_ci.yml)
 
 # Digital Paper #
 
