@@ -18,7 +18,7 @@ func (er *ErrorResponse) Respond() {
 		er.RaisedError = fmt.Errorf("")
 	}
 
-	errorMessage := fmt.Sprintf("%d - %s. %s", er.StatusCode, er.Message, er.RaisedError.Error())
+	errorMessage := fmt.Sprintf("%d - %s. reason: %s", er.StatusCode, er.Message, er.RaisedError.Error())
 
 	(*er.ResponseWriter).WriteHeader(er.StatusCode)
 	(*er.ResponseWriter).Header().Set("X-Status-Reason", errorMessage)
