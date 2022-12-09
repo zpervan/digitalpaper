@@ -4,40 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-	"time"
 
 	"digitalpaper/backend/core"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-func (db *Database) Connect(dbUrl string) error {
-	clientOptions := options.Client().ApplyURI(dbUrl)
-	clientOptions.SetServerSelectionTimeout(3 * time.Second)
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-
-	if err != nil {
-		return err
-	}
-
-	// Check if the database connection is alive
-	if err := client.Ping(context.TODO(), nil); err != nil {
-		return err
-	}
-
-	database := os.Getenv("MONGO_INITDB_DATABASE")
-
-	db.Posts = client.Database(database).Collection("posts")
-	db.Users = client.Database(database).Collection("users")
-	db.Sessions = client.Database(database).Collection("sessions")
-
-	db.app.Log.Info("Database connection established")
-
-	return nil
-}
 
 func (db Database) CreatePost(ctx *context.Context, post *core.Post) error {
 	_, err := db.Posts.InsertOne(context.TODO(), post)
