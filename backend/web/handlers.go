@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 
 	"net/http"
 	"os"
@@ -301,4 +302,56 @@ func (h *Handler) getUserByUsername(w http.ResponseWriter, req *http.Request) {
 		h.App.Log.Error(errorResponse.Message)
 		return
 	}
+}
+
+func (h *Handler) login(w http.ResponseWriter, req *http.Request) {
+	h.App.Log.Info("Logging in")
+
+	var userCredentials core.UserLogin
+	err := json.NewDecoder(req.Body).Decode(&userCredentials)
+	if err != nil {
+		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while login"}
+		errorResponse.Respond()
+
+		h.App.Log.Error(errorResponse.Message)
+		return
+	}
+
+	fetchedUser, err := h.Database.GetUserByMail(req.Context(), userCredentials.Mail)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+
+		// If the data is empty, the user doesn't exist
+		if fetchedUser.IsEmpty() {
+			statusCode = http.StatusNotFound
+		}
+
+		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: nil, StatusCode: statusCode, Message: "error while login"}
+		errorResponse.Respond()
+
+		h.App.Log.Error(errorResponse.Message)
+
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(fetchedUser.Password), []byte(userCredentials.Password))
+	if err != nil {
+		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: fmt.Errorf("wrong credentials"), StatusCode: http.StatusNotAcceptable, Message: ""}
+		errorResponse.Respond()
+
+		h.App.Log.Error(errorResponse.RaisedError.Error())
+		return
+	}
+
+	err = h.App.SessionManager.RenewToken(req.Context())
+	if err != nil {
+		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusNotAcceptable, Message: "could not create session for user"}
+		errorResponse.Respond()
+
+		h.App.Log.Error(errorResponse.Message)
+		return
+	}
+
+	h.App.SessionManager.Put(req.Context(), "user", fetchedUser.Username)
+	h.App.Log.Info("User logged in")
 }

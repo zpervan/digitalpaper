@@ -8,10 +8,17 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (db Database) CreateUser(ctx context.Context, user *core.User) error {
-	_, err := db.Users.InsertOne(ctx, user)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
+	if err != nil {
+		return err
+	}
+
+	user.Password = string(hashedPassword)
+	_, err = db.Users.InsertOne(ctx, user)
 
 	if err != nil {
 		return err
@@ -58,7 +65,7 @@ func (db Database) GetUsers(ctx *context.Context, limit int) ([]core.User, error
 func (db Database) GetUserByUsername(ctx context.Context, username string) (_ core.User, err error) {
 	defer func() {
 		if err != nil {
-			db.app.Log.Error(fmt.Sprintf("could not get user by username \"%s\". Reason: %s", username, err))
+			db.app.Log.Error(fmt.Sprintf("could not get user by username \"%s\". reason: %s", username, err))
 		}
 	}()
 
@@ -68,6 +75,30 @@ func (db Database) GetUserByUsername(ctx context.Context, username string) (_ co
 	err = queryResult.Err()
 	if err != nil {
 		return core.User{}, err
+	}
+
+	var user core.User
+	err = queryResult.Decode(&user)
+
+	if err != nil {
+		return core.User{}, err
+	}
+
+	return user, nil
+}
+
+func (db Database) GetUserByMail(ctx context.Context, mail string) (_ core.User, err error) {
+	defer func() {
+		if err != nil {
+			db.app.Log.Error(fmt.Sprintf("could not get user by mail \"%s\". reason: %s", mail, err))
+		}
+	}()
+
+	filter := bson.M{"mail": mail}
+	queryResult := db.Users.FindOne(ctx, filter)
+
+	if queryResult.Err() != nil {
+		return core.User{}, queryResult.Err()
 	}
 
 	var user core.User
