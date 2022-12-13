@@ -30,10 +30,6 @@ jobs:
       - name: Run tests
         run: go test digitalpaper/backend/... -v -coverprofile=backend_coverage.out -coverpkg=./backend/...
 
-      - uses: codecov/codecov-action@v1
-        with:
-            fail_ci_if_error: false
-
       - name: Upload coverage to Codecov
         run: |
           curl -Os https://uploader.codecov.io/latest/linux/codecov
