@@ -35,6 +35,7 @@ func (r Routes) HandleRequests() *mux.Router {
 	router.Path("/posts").Methods(http.MethodPost).Handler(dynamicMiddleware.ThenFunc(r.Handlers.createPost))
 	router.Path("/users").Methods(http.MethodPost).Handler(dynamicMiddleware.ThenFunc(r.Handlers.createUser))
 	router.Path("/login").Methods(http.MethodPost).Handler(dynamicMiddleware.ThenFunc(r.Handlers.login))
+	router.Path("/logout").Methods(http.MethodPost).Handler(dynamicMiddleware.ThenFunc(r.Handlers.logout))
 
 	// PUT
 	router.Path("/posts").Methods(http.MethodPut).Handler(dynamicMiddleware.ThenFunc(r.Handlers.editPost))

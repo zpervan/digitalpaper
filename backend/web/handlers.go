@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"digitalpaper/backend/core"
 	"digitalpaper/backend/database"
 	"encoding/json"
@@ -14,6 +15,10 @@ import (
 
 	"github.com/google/uuid"
 )
+
+// Context keys
+type contextKey string
+const contextKeyAuthenticatedUserId = contextKey("authenticatedUserId")
 
 // For local (non-Docker) development/testing
 const localDatabaseUrl = "mongodb://admin:password@localhost:27018"
@@ -206,6 +211,9 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Generate a new UUID
+	newUser.Id = uuid.NewString()
+
 	err = h.Database.CreateUser(req.Context(), &newUser)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating user"}
@@ -307,7 +315,7 @@ func (h *Handler) getUserByUsername(w http.ResponseWriter, req *http.Request) {
 func (h *Handler) login(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info("Logging in")
 
-	var userCredentials core.UserLogin
+	var userCredentials core.User
 	err := json.NewDecoder(req.Body).Decode(&userCredentials)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while login"}
@@ -352,6 +360,34 @@ func (h *Handler) login(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	h.App.SessionManager.Put(req.Context(), "user", fetchedUser.Username)
-	h.App.Log.Info("User logged in")
+	h.App.SessionManager.Put(req.Context(), "authenticatedUserId", fetchedUser.Id)
+	h.App.Log.Info("User \"" + fetchedUser.Username + "\" logged in")
+}
+
+func (h *Handler) logout(w http.ResponseWriter, req *http.Request) {
+	var logoutUser core.User
+	err := json.NewDecoder(req.Body).Decode(&logoutUser)
+	if err != nil {
+		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "could logout user"}
+		errorResponse.Respond()
+
+		h.App.Log.Error(errorResponse.Message)
+		return
+	}
+
+	if !h.App.SessionManager.Exists(req.Context(), string("authenticatedUserId")) {
+		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusNotFound, Message: "no authenticated users in session data"}
+		errorResponse.Respond()
+
+		h.App.Log.Error(errorResponse.Message)
+		return
+	}
+
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, contextKeyAuthenticatedUserId, logoutUser.Id)
+	req = req.WithContext(ctx)
+
+	h.App.SessionManager.Remove(req.Context(), "authenticatedUserId")
+	h.App.SessionManager.Destroy(req.Context())
+	h.App.Log.Info("Logged out user")
 }

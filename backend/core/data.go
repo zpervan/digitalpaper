@@ -9,6 +9,7 @@ type Post struct {
 }
 
 type User struct {
+	Id       string `json:"id" bson:"id"`
 	Username string `json:"username" bson:"username"`
 	Name     string `json:"name" bson:"name"`
 	Surname  string `json:"surname" bson:"surname"`
@@ -24,12 +25,7 @@ type Comment struct {
 	Reply        string
 }
 
-type UserLogin struct {
-	Mail     string `json:"mail" bson:"mail"`
-	Password string `json:"password" bson:"password"`
-}
-
-func (u *User)IsEmpty() bool {
+func (u *User) IsEmpty() bool {
 	isEmpty := true
 
 	isEmpty = isEmpty && (u.Username == "")
