@@ -10,40 +10,50 @@ import (
 type Routes struct {
 	App      *core.Application
 	Handlers *Handler
+	Middleware *Middleware
 }
 
 func NewRoutes(app *core.Application) *Routes {
 	routes := &Routes{}
 	routes.App = app
 	routes.Handlers = NewHandler(routes.App)
+	routes.Middleware = NewMiddleware(routes.App)
 
 	return routes
 }
 
 func (r Routes) HandleRequests() *mux.Router {
 	router := mux.NewRouter()
-
-    dynamicMiddleware := alice.New(r.App.SessionManager.LoadAndSave)
+	
+	// Unprotected
+    dynamicMw := alice.New(r.App.SessionManager.LoadAndSave)
     
 	// GET
-	router.Path("/posts").Methods(http.MethodGet).Handler(dynamicMiddleware.ThenFunc(r.Handlers.getPosts))
-	router.Path("/posts/{id}").Methods(http.MethodGet).Handler(dynamicMiddleware.ThenFunc(r.Handlers.getPostById))
-	router.Path("/users").Methods(http.MethodGet).Handler(dynamicMiddleware.ThenFunc(r.Handlers.getUsers))
-	router.Path("/users/{username}").Methods(http.MethodGet).Handler(dynamicMiddleware.ThenFunc(r.Handlers.getUserByUsername))
+	router.Path("/posts").Methods(http.MethodGet).Handler(dynamicMw.ThenFunc(r.Handlers.getPosts))
+	router.Path("/posts/{id}").Methods(http.MethodGet).Handler(dynamicMw.ThenFunc(r.Handlers.getPostById))
 
 	// POST
-	router.Path("/posts").Methods(http.MethodPost).Handler(dynamicMiddleware.ThenFunc(r.Handlers.createPost))
-	router.Path("/users").Methods(http.MethodPost).Handler(dynamicMiddleware.ThenFunc(r.Handlers.createUser))
-	router.Path("/login").Methods(http.MethodPost).Handler(dynamicMiddleware.ThenFunc(r.Handlers.login))
-	router.Path("/logout").Methods(http.MethodPost).Handler(dynamicMiddleware.ThenFunc(r.Handlers.logout))
+	router.Path("/users").Methods(http.MethodPost).Handler(dynamicMw.ThenFunc(r.Handlers.createUser))
+	router.Path("/login").Methods(http.MethodPost).Handler(dynamicMw.ThenFunc(r.Handlers.login))
+
+	// Protected
+	protectedMw := dynamicMw.Append(r.Middleware.RequireAuthentication)
+
+	// GET
+	router.Path("/users").Methods(http.MethodGet).Handler(protectedMw.ThenFunc(r.Handlers.getUsers))
+	router.Path("/users/{username}").Methods(http.MethodGet).Handler(protectedMw.ThenFunc(r.Handlers.getUserByUsername))
+
+	// POST
+	router.Path("/posts").Methods(http.MethodPost).Handler(protectedMw.ThenFunc(r.Handlers.createPost))
+	router.Path("/logout").Methods(http.MethodPost).Handler(protectedMw.ThenFunc(r.Handlers.logout))
 
 	// PUT
-	router.Path("/posts").Methods(http.MethodPut).Handler(dynamicMiddleware.ThenFunc(r.Handlers.editPost))
-	router.Path("/users").Methods(http.MethodPut).Handler(dynamicMiddleware.ThenFunc(r.Handlers.editUser))
+	router.Path("/posts").Methods(http.MethodPut).Handler(protectedMw.ThenFunc(r.Handlers.editPost))
+	router.Path("/users").Methods(http.MethodPut).Handler(protectedMw.ThenFunc(r.Handlers.editUser))
 
 	// DELETE
-	router.Path("/posts/{id}").Methods(http.MethodDelete).Handler(dynamicMiddleware.ThenFunc(r.Handlers.deletePost))
-	router.Path("/users/{username}").Methods(http.MethodDelete).Handler(dynamicMiddleware.ThenFunc(r.Handlers.deleteUser))
+	router.Path("/posts/{id}").Methods(http.MethodDelete).Handler(protectedMw.ThenFunc(r.Handlers.deletePost))
+	router.Path("/users/{username}").Methods(http.MethodDelete).Handler(protectedMw.ThenFunc(r.Handlers.deleteUser))
 
     // @TODO: Add middleware functionalities (i.e. security headers)
 	return router
