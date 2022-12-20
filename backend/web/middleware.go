@@ -18,6 +18,17 @@ func NewMiddleware(app *core.Application) *Middleware {
 	return middleware
 }
 
+func (m *Middleware) SecureHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Referrer-Policy", "origin-when-cross-origin")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "deny")
+		w.Header().Set("X-XSS-Protection", "0")
+
+		next.ServeHTTP(w, req)
+	})
+}
+
 func (m *Middleware) RequireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if !m.App.SessionManager.Exists(req.Context(), "authenticatedUserId") {

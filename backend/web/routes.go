@@ -22,7 +22,7 @@ func NewRoutes(app *core.Application) *Routes {
 	return routes
 }
 
-func (r Routes) HandleRequests() *mux.Router {
+func (r Routes) HandleRequests() http.Handler {
 	router := mux.NewRouter()
 	
 	// Unprotected
@@ -55,6 +55,8 @@ func (r Routes) HandleRequests() *mux.Router {
 	router.Path("/posts/{id}").Methods(http.MethodDelete).Handler(protectedMw.ThenFunc(r.Handlers.deletePost))
 	router.Path("/users/{username}").Methods(http.MethodDelete).Handler(protectedMw.ThenFunc(r.Handlers.deleteUser))
 
-    // @TODO: Add middleware functionalities (i.e. security headers)
-	return router
+	// This will be called before each handler
+	standardMwChain := alice.New(r.Middleware.SecureHeaders)
+
+	return standardMwChain.Then(router)
 }
