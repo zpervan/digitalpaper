@@ -32,7 +32,7 @@ func (m *Middleware) SecureHeaders(next http.Handler) http.Handler {
 func (m *Middleware) RequireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if !m.App.SessionManager.Exists(req.Context(), "authenticatedUserId") {
-			errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: fmt.Errorf(""), StatusCode: http.StatusForbidden}
+			errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: fmt.Errorf(""), StatusCode: http.StatusForbidden}
 			errorResponse.Respond()
 
 			m.App.Log.Error(errorResponse.Message)

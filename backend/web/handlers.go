@@ -18,6 +18,7 @@ import (
 
 // Context keys
 type contextKey string
+
 const contextKeyAuthenticatedUserId = contextKey("authenticatedUserId")
 
 // For local (non-Docker) development/testing
@@ -57,7 +58,7 @@ func (h *Handler) createPost(w http.ResponseWriter, req *http.Request) {
 	err := json.NewDecoder(req.Body).Decode(&newPost)
 
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating post"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating post"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -68,7 +69,7 @@ func (h *Handler) createPost(w http.ResponseWriter, req *http.Request) {
 	newPost.Id = uuid.New().String()
 	err = h.Database.CreatePost(&context, &newPost)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating post"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating post"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -82,7 +83,7 @@ func (h *Handler) editPost(w http.ResponseWriter, req *http.Request) {
 	var updatedPost core.Post
 	err := json.NewDecoder(req.Body).Decode(&updatedPost)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while updating post"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while updating post"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -92,7 +93,7 @@ func (h *Handler) editPost(w http.ResponseWriter, req *http.Request) {
 	context := req.Context()
 	err = h.Database.UpdatePost(context, &updatedPost)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while updating post"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while updating post"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -107,7 +108,7 @@ func (h *Handler) deletePost(w http.ResponseWriter, req *http.Request) {
 	context := req.Context()
 	err := h.Database.DeletePost(context, postId)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while deleting post"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while deleting post"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -121,16 +122,16 @@ func (h *Handler) getPosts(w http.ResponseWriter, req *http.Request) {
 	context := req.Context()
 	posts, err := h.Database.GetAllPosts(&context)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting posts"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting posts"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
 		return
 	}
 
-	err = core.EncodeResponse(&w, http.StatusOK, &posts)
+	err = core.EncodeResponse(w, http.StatusOK, &posts)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting posts"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting posts"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -145,16 +146,16 @@ func (h *Handler) getPostById(w http.ResponseWriter, req *http.Request) {
 	context := req.Context()
 	post, err := h.Database.GetPostById(&context, id)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while querying post"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while querying post"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
 		return
 	}
 
-	err = core.EncodeResponse(&w, http.StatusOK, &post)
+	err = core.EncodeResponse(w, http.StatusOK, &post)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while querying post"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while querying post"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -168,7 +169,7 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 	var newUser core.User
 	err := json.NewDecoder(req.Body).Decode(&newUser)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating user"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating user"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -177,7 +178,7 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 
 	validationResult := core.ValidateUser(&newUser)
 	if validationResult != nil {
-		err = core.EncodeResponse(&w, http.StatusBadRequest, validationResult)
+		err = core.EncodeResponse(w, http.StatusBadRequest, validationResult)
 		if err != nil {
 			h.App.Log.Error("cannot encode validation results. reason: " + err.Error())
 			return
@@ -196,7 +197,7 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 
 	userExists, err := h.Database.UserExists(req.Context(), &newUser)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while checking user existence"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while checking user existence"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -204,7 +205,7 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if userExists {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusBadRequest, Message: "user with that username or mail already exists"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusBadRequest, Message: "user with that username or mail already exists"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -216,7 +217,7 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 
 	err = h.Database.CreateUser(req.Context(), &newUser)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating user"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating user"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -230,7 +231,7 @@ func (h *Handler) editUser(w http.ResponseWriter, req *http.Request) {
 	var updatedUser core.User
 	err := json.NewDecoder(req.Body).Decode(&updatedUser)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while editing user"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while editing user"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -240,7 +241,7 @@ func (h *Handler) editUser(w http.ResponseWriter, req *http.Request) {
 	context := req.Context()
 	err = h.Database.UpdateUser(context, &updatedUser)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while editing user"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while editing user"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -255,7 +256,7 @@ func (h *Handler) deleteUser(w http.ResponseWriter, req *http.Request) {
 	context := req.Context()
 	err := h.Database.DeleteUser(context, username)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while deleting user"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while deleting user"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -271,16 +272,16 @@ func (h *Handler) getUsers(w http.ResponseWriter, req *http.Request) {
 	// @TODO: Add functionality to return a certain amount of user?
 	users, err := h.Database.GetUsers(&context, -1)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting users"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting users"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
 		return
 	}
 
-	err = core.EncodeResponse(&w, http.StatusOK, &users)
+	err = core.EncodeResponse(w, http.StatusOK, &users)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting users"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting users"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -295,16 +296,16 @@ func (h *Handler) getUserByUsername(w http.ResponseWriter, req *http.Request) {
 
 	user, err := h.Database.GetUserByUsername(req.Context(), username)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting user"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting user"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
 		return
 	}
 
-	err = core.EncodeResponse(&w, http.StatusOK, &user)
+	err = core.EncodeResponse(w, http.StatusOK, &user)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting user"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting user"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -318,7 +319,7 @@ func (h *Handler) login(w http.ResponseWriter, req *http.Request) {
 	var userCredentials core.User
 	err := json.NewDecoder(req.Body).Decode(&userCredentials)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while login"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while login"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -334,7 +335,7 @@ func (h *Handler) login(w http.ResponseWriter, req *http.Request) {
 			statusCode = http.StatusNotFound
 		}
 
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: nil, StatusCode: statusCode, Message: "error while login"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: nil, StatusCode: statusCode, Message: "error while login"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -344,7 +345,7 @@ func (h *Handler) login(w http.ResponseWriter, req *http.Request) {
 
 	err = bcrypt.CompareHashAndPassword([]byte(fetchedUser.Password), []byte(userCredentials.Password))
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: fmt.Errorf("wrong credentials"), StatusCode: http.StatusNotAcceptable, Message: ""}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: fmt.Errorf("wrong credentials"), StatusCode: http.StatusNotAcceptable, Message: ""}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.RaisedError.Error())
@@ -353,7 +354,7 @@ func (h *Handler) login(w http.ResponseWriter, req *http.Request) {
 
 	err = h.App.SessionManager.RenewToken(req.Context())
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusNotAcceptable, Message: "could not create session for user"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusNotAcceptable, Message: "could not create session for user"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -368,7 +369,7 @@ func (h *Handler) logout(w http.ResponseWriter, req *http.Request) {
 	var logoutUser core.User
 	err := json.NewDecoder(req.Body).Decode(&logoutUser)
 	if err != nil {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "could logout user"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "could logout user"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
@@ -376,7 +377,7 @@ func (h *Handler) logout(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if !h.App.SessionManager.Exists(req.Context(), string("authenticatedUserId")) {
-		errorResponse := core.ErrorResponse{ResponseWriter: &w, RaisedError: err, StatusCode: http.StatusNotFound, Message: "no authenticated users in session data"}
+		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusNotFound, Message: "no authenticated users in session data"}
 		errorResponse.Respond()
 
 		h.App.Log.Error(errorResponse.Message)
