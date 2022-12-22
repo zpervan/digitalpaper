@@ -2,6 +2,7 @@
 [![Backend Windows](https://github.com/zpervan/digitalpaper/actions/workflows/backend_windows_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/backend_windows_ci.yml)
 [![Frontend Ubuntu](https://github.com/zpervan/digitalpaper/actions/workflows/frontend_ubuntu_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/frontend_ubuntu_ci.yml)
 [![Frontend Windows](https://github.com/zpervan/digitalpaper/actions/workflows/frontend_windows_ci.yml/badge.svg)](https://github.com/zpervan/digitalpaper/actions/workflows/frontend_windows_ci.yml)
+[![codecov](https://codecov.io/gh/zpervan/digitalpaper/branch/main/graph/badge.svg?token=oqZc8U2hCO)](https://codecov.io/gh/zpervan/digitalpaper)
 
 # Digital Paper #
 
