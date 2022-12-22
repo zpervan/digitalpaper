@@ -1,10 +1,12 @@
 # Folders
 .idea
+.fleet
 
 # Files
 go.sum
 logs.txt
 *.o
+*.out
 *.exe
 
 # Logs
