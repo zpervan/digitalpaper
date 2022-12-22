@@ -21,7 +21,7 @@ import (
 type MiddlewareTestSuite struct {
 	suite.Suite
 	middleware *web.Middleware
-	serverMock *TestServer
+	serverMock *core.TestServer
 }
 
 // Suite functions
@@ -42,15 +42,15 @@ func (mts *MiddlewareTestSuite) SetupSuite() {
 	protectedMw := mw.Append(mts.middleware.RequireAuthentication)
 
 	// Dummy paths
-	mockRouter.Path(dummyGetOkUrl).Methods(http.MethodGet).Handler(protectedMw.ThenFunc(DummyGetOkResponse))
-	mockRouter.Path(dummyLogin).Methods(http.MethodGet).Handler(mw.ThenFunc(func(w http.ResponseWriter, req *http.Request) {
+	mockRouter.Path(core.DummyGetOkUrl).Methods(http.MethodGet).Handler(protectedMw.ThenFunc(core.DummyGetOkResponse))
+	mockRouter.Path(core.DummyLogin).Methods(http.MethodGet).Handler(mw.ThenFunc(func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		ctx = context.WithValue(ctx, "authenticatedUserId", "0000")
 		req = req.WithContext(ctx)
 
 		mts.middleware.App.SessionManager.Put(req.Context(), "authenticatedUserId", "0000")
 	}))
-	mockRouter.Path(removeUser).Methods(http.MethodGet).Handler(mw.ThenFunc(func(w http.ResponseWriter, req *http.Request) {
+	mockRouter.Path(core.RemoveUser).Methods(http.MethodGet).Handler(mw.ThenFunc(func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		ctx = context.WithValue(ctx, "authenticatedUserId", "0000")
 		req = req.WithContext(ctx)
@@ -59,7 +59,7 @@ func (mts *MiddlewareTestSuite) SetupSuite() {
 		mts.middleware.App.SessionManager.Destroy(req.Context())
 	}))
 
-	mts.serverMock = NewTestServer(mts.T(), mockRouter)
+	mts.serverMock = core.NewTestServer(mts.T(), mockRouter)
 
 	fmt.Println("Setting up middleware test suite... COMPLETE")
 }
@@ -73,7 +73,7 @@ func (mts *MiddlewareTestSuite) TearDownSuite() {
 }
 
 func (mts *MiddlewareTestSuite) TearDownTest() {
-	mts.serverMock.ExecuteGet(mts.T(), removeUser)
+	mts.serverMock.ExecuteGet(mts.T(), core.RemoveUser)
 }
 
 // Tests
@@ -108,7 +108,7 @@ func (mts *MiddlewareTestSuite) Test_GivenValidHttpRequest_WhenReturningResponse
 }
 
 func (mts *MiddlewareTestSuite) Test_GivenARequestFromNonAuthorizedUser_WhenRequestIsProcessed_ThenRequestIsDeclined() {
-	result, _ := mts.serverMock.ExecuteGet(mts.T(), dummyGetOkUrl)
+	result, _ := mts.serverMock.ExecuteGet(mts.T(), core.DummyGetOkUrl)
 
 	expected := http.StatusForbidden
 	actual := result.StatusCode
@@ -116,13 +116,13 @@ func (mts *MiddlewareTestSuite) Test_GivenARequestFromNonAuthorizedUser_WhenRequ
 }
 
 func (mts *MiddlewareTestSuite) Test_GivenARequestFromAuthorizedUser_WhenRequestIsProcessed_ThenRequestPasses() {
-	resultLogin, _ := mts.serverMock.ExecuteGet(mts.T(), dummyLogin)
+	resultLogin, _ := mts.serverMock.ExecuteGet(mts.T(), core.DummyLogin)
 
 	expected := http.StatusOK
 	actual := resultLogin.StatusCode
 	mts.Assertions.Equal(expected, actual, "status code should br \"200 - OK\", but isn't")
 
-	resultGet, _ := mts.serverMock.ExecuteGet(mts.T(), dummyGetOkUrl)
+	resultGet, _ := mts.serverMock.ExecuteGet(mts.T(), core.DummyGetOkUrl)
 
 	expected = http.StatusOK
 	actual = resultGet.StatusCode

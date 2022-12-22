@@ -1,4 +1,4 @@
-package tests
+package core
 
 import (
 	"io"
@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	dummyGetOkUrl = "/dummygetok"
-	dummyLogin    = "/dummyLogin"
-	removeUser    = "/removeUser"
+	DummyGetOkUrl = "/dummygetok"
+	DummyLogin    = "/dummyLogin"
+	RemoveUser    = "/removeUser"
 )
 
 type TestServer struct {
