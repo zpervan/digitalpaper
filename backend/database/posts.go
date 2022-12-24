@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"digitalpaper/backend/core"
@@ -17,7 +16,7 @@ func (db Database) CreatePost(ctx *context.Context, post *core.Post) error {
 		return err
 	}
 
-	db.app.Log.Info(fmt.Sprintf("Created new post with title \"%s\" and ID \"%s\"", post.Title, post.Id))
+	db.app.Log.Info(fmt.Sprintf("created new post with title \"%s\" and ID \"%s\"", post.Title, post.Id))
 	return nil
 }
 
@@ -26,7 +25,7 @@ func (db Database) GetAllPosts(context *context.Context) ([]core.Post, error) {
 	cursor, err := db.Posts.Find(*context, filter)
 
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Could not retrieve all posts. Reason: %s", err))
+		return nil, fmt.Errorf("could not retrieve all posts. reason: %s", err)
 	}
 
 	var queryResults []core.Post
@@ -36,23 +35,24 @@ func (db Database) GetAllPosts(context *context.Context) ([]core.Post, error) {
 
 		err := cursor.Decode(&singleResult)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("Could not retrieve task. Reason: %s", err))
+			return nil, fmt.Errorf("could not retrieve task. reason: %s", err)
 		}
 
 		queryResults = append(queryResults, singleResult)
 	}
 
 	if len(queryResults) == 0 {
-		db.app.Log.Warn("No tasks available")
+		db.app.Log.Warn("no tasks available")
 	}
 
 	return queryResults, nil
 }
 
+// @TODO: Add check that post ID should only contain letters, numbers and the "-" symbol (i.e. 1234-abcd-a1b2)?
 func (db Database) GetPostById(ctx *context.Context, id string) (_ core.Post, err error) {
 	defer func() {
 		if err != nil {
-			db.app.Log.Error(fmt.Sprintf("could not fetch post by ID %s. Reason: %s", id, err))
+			db.app.Log.Error(fmt.Sprintf("could not fetch post by ID %s. reason: %s", id, err))
 		}
 	}()
 
@@ -74,11 +74,12 @@ func (db Database) GetPostById(ctx *context.Context, id string) (_ core.Post, er
 	return result, nil
 }
 
-func (db Database) UpdatePost(ctx context.Context, updatedPost *core.Post) error {
+// @TODO: Handle situation when the modified count is 0 with an error?
+func (db Database) UpdatePost(ctx *context.Context, updatedPost *core.Post) error {
 	filter := bson.D{{"id", updatedPost.Id}}
 	update := bson.D{{"$set", updatedPost}}
 
-	result, err := db.Posts.UpdateOne(ctx, filter, update)
+	result, err := db.Posts.UpdateOne(*ctx, filter, update)
 
 	if err != nil {
 		return err
@@ -93,10 +94,11 @@ func (db Database) UpdatePost(ctx context.Context, updatedPost *core.Post) error
 	return nil
 }
 
-func (db Database) DeletePost(ctx context.Context, postId string) error {
+// @TODO: Handle situation when the deleted count is 0 with an error?
+func (db Database) DeletePost(ctx *context.Context, postId string) error {
 	filter := bson.D{{"id", postId}}
 
-	result, err := db.Posts.DeleteOne(ctx, filter, nil)
+	result, err := db.Posts.DeleteOne(*ctx, filter, nil)
 
 	if err != nil {
 		return err

@@ -91,7 +91,7 @@ func (h *Handler) editPost(w http.ResponseWriter, req *http.Request) {
 	}
 
 	context := req.Context()
-	err = h.Database.UpdatePost(context, &updatedPost)
+	err = h.Database.UpdatePost(&context, &updatedPost)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while updating post"}
 		errorResponse.Respond()
@@ -106,7 +106,7 @@ func (h *Handler) deletePost(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info("Deleting post with Id " + postId)
 
 	context := req.Context()
-	err := h.Database.DeletePost(context, postId)
+	err := h.Database.DeletePost(&context, postId)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while deleting post"}
 		errorResponse.Respond()
