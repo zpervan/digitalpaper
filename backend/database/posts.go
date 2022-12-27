@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (db Database) CreatePost(ctx *context.Context, post *core.Post) error {
+func (db Database) CreatePost(ctx context.Context, post *core.Post) error {
 	_, err := db.Posts.InsertOne(context.TODO(), post)
 
 	if err != nil {
@@ -20,9 +20,9 @@ func (db Database) CreatePost(ctx *context.Context, post *core.Post) error {
 	return nil
 }
 
-func (db Database) GetAllPosts(context *context.Context) ([]core.Post, error) {
+func (db Database) GetAllPosts(ctx context.Context) ([]core.Post, error) {
 	filter := bson.M{}
-	cursor, err := db.Posts.Find(*context, filter)
+	cursor, err := db.Posts.Find(ctx, filter)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve all posts. reason: %s", err)
@@ -30,7 +30,7 @@ func (db Database) GetAllPosts(context *context.Context) ([]core.Post, error) {
 
 	var queryResults []core.Post
 
-	for cursor.Next(*context) {
+	for cursor.Next(ctx) {
 		singleResult := core.Post{}
 
 		err := cursor.Decode(&singleResult)
@@ -49,7 +49,7 @@ func (db Database) GetAllPosts(context *context.Context) ([]core.Post, error) {
 }
 
 // @TODO: Add check that post ID should only contain letters, numbers and the "-" symbol (i.e. 1234-abcd-a1b2)?
-func (db Database) GetPostById(ctx *context.Context, id string) (_ core.Post, err error) {
+func (db Database) GetPostById(ctx context.Context, id string) (_ core.Post, err error) {
 	defer func() {
 		if err != nil {
 			db.app.Log.Error(fmt.Sprintf("could not fetch post by ID %s. reason: %s", id, err))
@@ -57,7 +57,7 @@ func (db Database) GetPostById(ctx *context.Context, id string) (_ core.Post, er
 	}()
 
 	filter := bson.M{"id": id}
-	queryResult := db.Posts.FindOne(*ctx, filter)
+	queryResult := db.Posts.FindOne(ctx, filter)
 
 	err = queryResult.Err()
 	if err != nil {
@@ -75,11 +75,11 @@ func (db Database) GetPostById(ctx *context.Context, id string) (_ core.Post, er
 }
 
 // @TODO: Handle situation when the modified count is 0 with an error?
-func (db Database) UpdatePost(ctx *context.Context, updatedPost *core.Post) error {
+func (db Database) UpdatePost(ctx context.Context, updatedPost *core.Post) error {
 	filter := bson.D{{"id", updatedPost.Id}}
 	update := bson.D{{"$set", updatedPost}}
 
-	result, err := db.Posts.UpdateOne(*ctx, filter, update)
+	result, err := db.Posts.UpdateOne(ctx, filter, update)
 
 	if err != nil {
 		return err
@@ -95,10 +95,10 @@ func (db Database) UpdatePost(ctx *context.Context, updatedPost *core.Post) erro
 }
 
 // @TODO: Handle situation when the deleted count is 0 with an error?
-func (db Database) DeletePost(ctx *context.Context, postId string) error {
+func (db Database) DeletePost(ctx context.Context, postId string) error {
 	filter := bson.D{{"id", postId}}
 
-	result, err := db.Posts.DeleteOne(*ctx, filter, nil)
+	result, err := db.Posts.DeleteOne(ctx, filter, nil)
 
 	if err != nil {
 		return err
