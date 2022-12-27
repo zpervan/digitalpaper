@@ -11,7 +11,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (db Database) CreateUser(ctx context.Context, user *core.User) error {
+func (db Database) CreateUser(ctx context.Context, user core.User) error {
+	if user.IsEmpty() {
+		return fmt.Errorf("user data is empty")
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
 	if err != nil {
 		return err
@@ -24,18 +28,18 @@ func (db Database) CreateUser(ctx context.Context, user *core.User) error {
 		return err
 	}
 
-	db.app.Log.Info("New user created")
+	db.app.Log.Info("new user created")
 	return nil
 }
 
-func (db Database) GetUsers(ctx *context.Context, limit int) ([]core.User, error) {
+func (db Database) GetUsers(ctx context.Context, limit int) ([]core.User, error) {
 	var filterOptions *options.FindOptions
 
 	if limit != -1 {
 		filterOptions = options.Find().SetLimit(int64(limit))
 	}
 
-	cursor, err := db.Users.Find(*ctx, noFilterCriteria, filterOptions)
+	cursor, err := db.Users.Find(ctx, noFilterCriteria, filterOptions)
 
 	if err != nil {
 		return []core.User{}, err
@@ -43,7 +47,7 @@ func (db Database) GetUsers(ctx *context.Context, limit int) ([]core.User, error
 
 	var results []core.User
 
-	for cursor.Next(*ctx) {
+	for cursor.Next(ctx) {
 		singleResult := core.User{}
 
 		err = cursor.Decode(&singleResult)
@@ -56,7 +60,7 @@ func (db Database) GetUsers(ctx *context.Context, limit int) ([]core.User, error
 	}
 
 	if len(results) == 0 {
-		db.app.Log.Warn("Couldn't find any users in database")
+		db.app.Log.Warn("couldn't find any users in database")
 	}
 
 	return results, nil
@@ -111,10 +115,28 @@ func (db Database) GetUserByMail(ctx context.Context, mail string) (_ core.User,
 	return user, nil
 }
 
-func (db Database) UpdateUser(ctx context.Context, user *core.User) error {
-	filter := bson.D{{"username", user.Username}}
-	update := bson.D{{"$set", user}}
+// @TODO: Should we update user by user ID?
+func (db Database) UpdateUser(ctx context.Context, user core.User) error {
+	userExists, err := db.UserExists(ctx, user)
 
+	if err != nil {
+		return err
+	}
+
+	if !userExists {
+		return fmt.Errorf("cannot update non-existing user")
+	}
+
+	filter := bson.D{{"username", user.Username}}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
+	if err != nil {
+		return err
+	}
+
+	user.Password = string(hashedPassword)
+
+	update := bson.D{{"$set", user}}
 	result, err := db.Users.UpdateOne(ctx, filter, update)
 
 	if err != nil {
@@ -122,9 +144,9 @@ func (db Database) UpdateUser(ctx context.Context, user *core.User) error {
 	}
 
 	if result.ModifiedCount == 0 {
-		db.app.Log.Warn("Update of user \"" + user.Username + "\" was unsuccessful")
+		db.app.Log.Warn("update of user \"" + user.Username + "\" was unsuccessful")
 	} else {
-		db.app.Log.Info("Modified user \"" + user.Username + "\"")
+		db.app.Log.Info("modified user \"" + user.Username + "\"")
 	}
 
 	return nil
@@ -140,15 +162,15 @@ func (db Database) DeleteUser(ctx context.Context, username string) error {
 	}
 
 	if result.DeletedCount == 0 {
-		db.app.Log.Warn("Deleting user with username \"" + username + "\" was unsuccessful")
+		db.app.Log.Warn("deleting user with username \"" + username + "\" was unsuccessful")
 	} else {
-		db.app.Log.Info("Deleted user with username \"" + username + "\"")
+		db.app.Log.Info("deleted user with username \"" + username + "\"")
 	}
 
 	return nil
 }
 
-func (db Database) UserExists(ctx context.Context, user *core.User) (bool, error) {
+func (db Database) UserExists(ctx context.Context, user core.User) (bool, error) {
 	filterByUsername := bson.D{{"username", user.Username}}
 	resultByUsername, err := db.Users.CountDocuments(ctx, filterByUsername, nil)
 	if err != nil {
@@ -156,7 +178,7 @@ func (db Database) UserExists(ctx context.Context, user *core.User) (bool, error
 	}
 
 	filterByMail := bson.D{{"mail", user.Mail}}
-	resultByMail, err :=  db.Users.CountDocuments(ctx, filterByMail,nil)
+	resultByMail, err := db.Users.CountDocuments(ctx, filterByMail, nil)
 	if err != nil {
 		return false, err
 	}

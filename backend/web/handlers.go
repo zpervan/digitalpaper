@@ -67,7 +67,7 @@ func (h *Handler) createPost(w http.ResponseWriter, req *http.Request) {
 
 	context := req.Context()
 	newPost.Id = uuid.New().String()
-	err = h.Database.CreatePost(&context, &newPost)
+	err = h.Database.CreatePost(context, &newPost)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating post"}
 		errorResponse.Respond()
@@ -91,7 +91,7 @@ func (h *Handler) editPost(w http.ResponseWriter, req *http.Request) {
 	}
 
 	context := req.Context()
-	err = h.Database.UpdatePost(&context, &updatedPost)
+	err = h.Database.UpdatePost(context, &updatedPost)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while updating post"}
 		errorResponse.Respond()
@@ -106,7 +106,7 @@ func (h *Handler) deletePost(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info("Deleting post with Id " + postId)
 
 	context := req.Context()
-	err := h.Database.DeletePost(&context, postId)
+	err := h.Database.DeletePost(context, postId)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while deleting post"}
 		errorResponse.Respond()
@@ -120,7 +120,7 @@ func (h *Handler) getPosts(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info("Fetching all posts")
 
 	context := req.Context()
-	posts, err := h.Database.GetAllPosts(&context)
+	posts, err := h.Database.GetAllPosts(context)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting posts"}
 		errorResponse.Respond()
@@ -144,7 +144,7 @@ func (h *Handler) getPostById(w http.ResponseWriter, req *http.Request) {
 	h.App.Log.Info(fmt.Sprintf("Fetching post with ID %s", id))
 
 	context := req.Context()
-	post, err := h.Database.GetPostById(&context, id)
+	post, err := h.Database.GetPostById(context, id)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while querying post"}
 		errorResponse.Respond()
@@ -195,7 +195,7 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	userExists, err := h.Database.UserExists(req.Context(), &newUser)
+	userExists, err := h.Database.UserExists(req.Context(), newUser)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while checking user existence"}
 		errorResponse.Respond()
@@ -215,7 +215,7 @@ func (h *Handler) createUser(w http.ResponseWriter, req *http.Request) {
 	// Generate a new UUID
 	newUser.Id = uuid.NewString()
 
-	err = h.Database.CreateUser(req.Context(), &newUser)
+	err = h.Database.CreateUser(req.Context(), newUser)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while creating user"}
 		errorResponse.Respond()
@@ -239,7 +239,7 @@ func (h *Handler) editUser(w http.ResponseWriter, req *http.Request) {
 	}
 
 	context := req.Context()
-	err = h.Database.UpdateUser(context, &updatedUser)
+	err = h.Database.UpdateUser(context, updatedUser)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while editing user"}
 		errorResponse.Respond()
@@ -270,7 +270,7 @@ func (h *Handler) getUsers(w http.ResponseWriter, req *http.Request) {
 	context := req.Context()
 
 	// @TODO: Add functionality to return a certain amount of user?
-	users, err := h.Database.GetUsers(&context, -1)
+	users, err := h.Database.GetUsers(context, -1)
 	if err != nil {
 		errorResponse := core.ErrorResponse{ResponseWriter: w, RaisedError: err, StatusCode: http.StatusInternalServerError, Message: "error while getting users"}
 		errorResponse.Respond()
